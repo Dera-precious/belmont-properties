@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LUXURY FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Manrope:wght@300;400;600&display=swap');
+
+body {
+  background-color: #FAFAF9;
+  /* Warm Limestone */
+  color: #0F172A;
+  /* Navy Blue */
+}
