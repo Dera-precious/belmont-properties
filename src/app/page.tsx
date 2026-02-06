@@ -2,30 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Added for Security Check
 import { useAuth } from '@/app/context/AuthContext';
 import {
     Building2, Users, ArrowRight, Shield,
     Plus, HardHat, TrendingUp, MapPin, Edit2, X, Check,
-    UploadCloud, Link as LinkIcon, GraduationCap, Scale, Eye
+    UploadCloud, Link as LinkIcon, GraduationCap, Scale, Loader2 // Added Loader
 } from 'lucide-react';
 
 export default function Home() {
     const { user, updateListing } = useAuth();
+    const router = useRouter(); // Initialize Router
 
     // FIX HYDRATION ERROR
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => setIsMounted(true), []);
 
-    const userName = isMounted && user ? user.name.split(' ')[0] : 'Guest';
-    const userTier = isMounted && user ? user.tier : 'Free';
-    const myListings = isMounted && user?.myListings || [];
+    // SECURITY CHECK: Redirect to Login if no user
+    useEffect(() => {
+        if (isMounted && !user) {
+            router.push('/login');
+        }
+    }, [isMounted, user, router]);
+
+    // Show Loading Screen while checking auth
+    if (!isMounted || !user) {
+        return (
+            <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
+            </div>
+        );
+    }
+
+    const userName = user.name.split(' ')[0];
+    const userTier = user.tier;
+    const myListings = user.myListings || [];
 
     // EDITING STATE
     const [editingItem, setEditingItem] = useState<any | null>(null);
     const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
     const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
 
-    // NEW: VIEWING STATE (FOR THE "RISE & BLUR" EFFECT)
+    // VIEWING STATE (FOR THE "RISE & BLUR" EFFECT)
     const [viewingItem, setViewingItem] = useState<any | null>(null);
 
     useEffect(() => {
@@ -65,8 +83,6 @@ export default function Home() {
         }
     };
 
-    if (!isMounted) return <div className="min-h-screen bg-[#0F172A]"></div>;
-
     return (
         <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
 
@@ -86,8 +102,7 @@ export default function Home() {
             <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-20 mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    {/* 1. Upload Property */}
-                    {/* 1. Upload Property - UPDATED LINK */}
+                    {/* 1. Upload Property - UPDATED LINK TO /upload */}
                     <Link href="/upload" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -104,8 +119,8 @@ export default function Home() {
                     </Link>
 
                     {/* 2. New Project */}
-                    <Link href="/create/plan" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><HardHat size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">New Project</h3><p className="text-[10px] text-gray-500">AI War Room</p></div></div>
+                    <Link href="/collab" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><HardHat size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">War Room</h3><p className="text-[10px] text-gray-500">Project Management</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
@@ -115,9 +130,9 @@ export default function Home() {
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
-                    {/* 4. Legal Help */}
-                    <Link href="/legal" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400"><Scale size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Legal Help</h3><p className="text-[10px] text-gray-500">Docs & Advice</p></div></div>
+                    {/* 4. Trust Center */}
+                    <Link href="/services" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400"><Shield size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Trust Center</h3><p className="text-[10px] text-gray-500">Book Security</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
@@ -138,7 +153,7 @@ export default function Home() {
                                 onClick={() => setViewingItem(item)} // TRIGGER "RISE UP" EFFECT
                                 className="group bg-white dark:bg-[#1E293B] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative cursor-pointer"
                             >
-                                {/* EDIT BUTTON (Stops Propagation so it doesn't trigger view mode) */}
+                                {/* EDIT BUTTON */}
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
                                     className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md p-2 rounded-full text-white hover:bg-[#D4AF37] transition-colors shadow-sm"
@@ -218,7 +233,6 @@ export default function Home() {
                     </div>
                 </div>
             )}
-            {/* ------------------------------------------- */}
 
             {/* FULL EDIT MODAL */}
             {editingItem && (

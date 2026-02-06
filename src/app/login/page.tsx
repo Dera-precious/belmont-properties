@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Added for better image handling
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-// FIX: Ensure this path is correct for your setup
 import { useAuth } from '@/app/context/AuthContext';
 import {
     ArrowRight, Mail, Lock, Eye, EyeOff,
@@ -26,9 +25,12 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
+        // Simulate Network Delay
         setTimeout(() => {
             if (email && password.length >= 6) {
+                // Log the user in
                 login(email, 'tenant', 'Returning User');
+                // Redirect to Dashboard
                 router.push('/');
             } else {
                 setError('Invalid credentials. Password must be 6+ chars.');
@@ -43,14 +45,13 @@ export default function LoginPage() {
             {/* CARD CONTAINER */}
             <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex min-h-[600px]">
 
-                {/* LEFT: VISUALS (With Custom Logo) */}
+                {/* LEFT: VISUALS */}
                 <div className="hidden md:flex w-1/2 bg-[#0F172A] relative flex-col justify-between p-12 text-white overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
                     <div className="relative z-10">
-                        {/* --- LOGO SECTION --- */}
+                        {/* LOGO */}
                         <div className="flex items-center gap-3 mb-6">
-                            {/* UPDATED LOGO HERE */}
                             <div className="relative w-12 h-12">
                                 <Image
                                     src="/belmont-logo-gold.png"
@@ -61,7 +62,6 @@ export default function LoginPage() {
                             </div>
                             <span className="font-serif font-bold text-xl tracking-widest text-[#D4AF37]">BELMONT</span>
                         </div>
-                        {/* -------------------- */}
 
                         <h1 className="text-4xl font-serif leading-tight">Welcome Back to Excellence.</h1>
                     </div>
