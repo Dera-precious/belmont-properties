@@ -1,152 +1,166 @@
-"use client";
-import React, { useState } from 'react';
-import GlassContainer from '@/components/Shell/GlassContainer';
+'use client';
 
-export default function PlanGeneratorPage() {
-    const [activeTab, setActiveTab] = useState<'2d' | 'layout' | 'specs'>('2d');
-    const [isOptimizing, setIsOptimizing] = useState(false);
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+    ArrowLeft, HardHat, Download, Ruler, Layers,
+    Zap, DollarSign, Cpu, BrainCircuit, Maximize2
+} from 'lucide-react';
 
-    const handleOptimize = () => {
-        setIsOptimizing(true);
-        setTimeout(() => setIsOptimizing(false), 3000); // Simulate 3s optimization
+export default function CreatePlan() {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [hasGenerated, setHasGenerated] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [statusText, setStatusText] = useState('Initializing...');
+
+    const [projectTitle, setProjectTitle] = useState('');
+    const [propertyType, setPropertyType] = useState('Modern');
+    const [budget, setBudget] = useState('');
+    const [description, setDescription] = useState('');
+
+    // ANIMATION SEQUENCE
+    useEffect(() => {
+        if (isGenerating) {
+            setProgress(0);
+            setStatusText('Initializing Neural Architect...');
+            const stages = [
+                { time: 1000, progress: 30, text: 'Scanning Terrain Data...' },
+                { time: 2500, progress: 60, text: 'Drafting Structural Framework...' },
+                { time: 4000, progress: 85, text: 'Calculating Material Costs...' },
+                { time: 5500, progress: 100, text: 'Finalizing Blueprints...' },
+            ];
+            stages.forEach((stage, index) => {
+                setTimeout(() => {
+                    setProgress(stage.progress);
+                    setStatusText(stage.text);
+                    if (index === stages.length - 1) {
+                        setTimeout(() => { setIsGenerating(false); setHasGenerated(true); }, 1000);
+                    }
+                }, stage.time);
+            });
+        }
+    }, [isGenerating]);
+
+    const handleGenerate = () => { if (!projectTitle) return; setIsGenerating(true); setHasGenerated(false); };
+
+    const getRenderImage = () => {
+        if (propertyType === 'Modern') return "https://cdn.luxury-houses.net/wp-content/uploads/2020/11/Concept-Design-of-Stunning-7-Bedroom-Modern-Villa-in-La-Zagaleta-Spain-9.jpg";
+        if (propertyType === 'Traditional') return "https://cdn.trendir.com/wp-content/uploads/old/house-design/assets_c/2014/01/traditional-exterior-hides-colourfully-contemporary-interior-1-pool-thumb-970xauto-30359.jpg";
+        return "https://mha.us.com/wp-content/uploads/2023/04/Overall-Image-1536x954.jpg";
     };
+    const blueprintUrl = "https://www.cambridgehomes.co.nz/wp-content/uploads/2023/08/Floorplan_1853941919.png";
 
     return (
-        <div className="h-[calc(100vh-80px)] overflow-hidden flex flex-col md:flex-row">
-            {/* LEFT PANEL - INPUTS (1/3) */}
-            <div className="w-full md:w-1/3 p-6 border-r border-[var(--color-gold)] overflow-y-auto bg-emerald/50">
-                <h1 className="text-3xl font-light text-white mb-6 tracking-tight">Plan Generator.</h1>
+        // APPLIED THEME CLASSES TO MAIN CONTAINER
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans flex flex-col md:flex-row overflow-hidden transition-colors duration-500">
 
-                {/* Project Details */}
-                <section className="mb-8">
-                    <h2 className="text-xs text-gold uppercase tracking-widest mb-4">Project Details</h2>
-                    <button className="w-full h-32 border-2 border-dashed border-[var(--color-gold)] rounded-lg flex flex-col items-center justify-center text-muted hover:text-white hover:bg-white/5 transition-colors group mb-6">
-                        <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">📷</span>
-                        <span className="text-xs uppercase tracking-widest">Upload Inspiration</span>
-                    </button>
+            {/* LEFT PANEL: INPUTS (Themed) */}
+            {/* FIX: Added isGenerating to the hidden condition so it vanishes on mobile during animation */}
+            <div className={`w-full md:w-1/3 bg-white dark:bg-[#1E293B] border-r border-gray-200 dark:border-gray-800 p-8 flex flex-col h-screen overflow-y-auto z-20 shadow-xl ${(hasGenerated || isGenerating) ? 'hidden md:flex' : 'flex'}`}>
+                <div className="mb-8">
+                    <Link href="/create" className="text-xs text-gray-500 dark:text-gray-400 hover:text-[#0F172A] dark:hover:text-white mb-4 inline-flex items-center gap-2 transition-colors">
+                        <ArrowLeft size={14} /> Back to Studio
+                    </Link>
+                    <h1 className="text-3xl font-serif font-bold mb-2">AI Plan Generator</h1>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">Define parameters. Initialize Belmont Neural Architect.</p>
+                </div>
 
-                    <div className="space-y-6">
-                        <div className="group">
-                            <label className="text-[10px] uppercase tracking-widest text-[var(--color-gold)] mb-2 block">Project Name</label>
-                            <input type="text" placeholder="e.g. Eko Atlantic Villa" className="w-full bg-transparent border-b border-white/20 py-2 text-white placeholder-white/20 outline-none focus:border-[var(--color-gold)] transition-colors font-manrope" />
-                        </div>
-
-                        <div className="group">
-                            <label className="text-[10px] uppercase tracking-widest text-[var(--color-gold)] mb-2 block">Dimensions (sqm)</label>
-                            <input type="text" placeholder="Total Area" className="w-full bg-transparent border-b border-white/20 py-2 text-white placeholder-white/20 outline-none focus:border-[var(--color-gold)] transition-colors font-manrope" />
-                        </div>
-
-                        <div className="group">
-                            <label className="text-[10px] uppercase tracking-widest text-[var(--color-gold)] mb-2 block">Architectural Style</label>
-                            <select className="w-full bg-transparent border-b border-white/20 py-2 text-white outline-none focus:border-[var(--color-gold)] transition-colors font-manrope cursor-pointer">
-                                <option className="bg-black text-white">Modern Contemporary</option>
-                                <option className="bg-black text-white">Brutalist</option>
-                                <option className="bg-black text-white">Traditional</option>
+                {/* THEMED INPUTS */}
+                <div className="space-y-6 flex-1">
+                    <div>
+                        <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest mb-2 block">Project Codename</label>
+                        <input type="text" value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} placeholder="e.g. Project Onyx" className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl text-[#0F172A] dark:text-white text-sm focus:border-[#D4AF37] outline-none transition-all placeholder:text-gray-400" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest mb-2 block">Style</label>
+                            <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl text-[#0F172A] dark:text-white text-sm outline-none appearance-none cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                                <option>Modern</option><option>Traditional</option><option>Industrial</option>
                             </select>
                         </div>
-                    </div>
-                </section>
-
-                {/* AI Visual Search */}
-                <section className="mb-8">
-                    <h2 className="text-xs text-gold uppercase tracking-widest mb-4">AI Visual Search</h2>
-                    <div className="border-2 border-dashed border-[var(--color-gold)] p-8 text-center cursor-pointer hover:bg-white/5 transition-colors group">
-                        <span className="text-4xl block mb-2 opacity-70 group-hover:scale-110 transition-transform">📷</span>
-                        <p className="text-sm text-white font-bold mb-1">Upload Reference Style</p>
-                        <p className="text-xs text-muted">Drop an image to match aesthetic.</p>
-                    </div>
-                </section>
-
-                {/* Style Selector */}
-                <section>
-                    <h2 className="text-xs text-gold uppercase tracking-widest mb-4">Architectural Style</h2>
-                    <div className="grid grid-cols-2 gap-2">
-                        {['Modern', 'Colonial', 'Minimalist', 'Brutalist'].map(style => (
-                            <button key={style} className="p-3 text-xs border border-[var(--color-text-muted)] text-muted hover:border-[var(--color-gold)] hover:text-white transition-colors text-left uppercase tracking-wider">
-                                {style}
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            </div>
-
-            {/* RIGHT PANEL - CANVAS (2/3) */}
-            <div className="w-full md:w-2/3 relative bg-[#011c12] flex flex-col">
-                {/* Top Toolbar / Tabs */}
-                <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-start pointer-events-none">
-                    <div className="glass-panel p-1 flex gap-1 pointer-events-auto">
-                        {[
-                            { id: '2d', label: '2D Plans' },
-                            { id: 'layout', label: 'Floor Layouts' },
-                            { id: 'specs', label: 'Material Specs' }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-4 py-2 text-xs uppercase tracking-wider font-bold transition-all ${activeTab === tab.id ? 'bg-[var(--color-gold)] text-[var(--color-emerald)]' : 'text-muted hover:text-white'}`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Canvas Area */}
-                <div className="flex-1 flex items-center justify-center relative overlow-hidden">
-                    {/* Grid Lines Background */}
-                    <div className="absolute inset-0 opacity-10"
-                        style={{
-                            backgroundImage: `linear-gradient(var(--color-text-muted) 1px, transparent 1px), linear-gradient(90deg, var(--color-text-muted) 1px, transparent 1px)`,
-                            backgroundSize: '40px 40px'
-                        }}
-                    />
-
-                    {/* Mock Content */}
-                    <div className={`transition-all duration-1000 ${isOptimizing ? 'scale-95 opacity-50 blur-sm' : 'scale-100 opacity-100'}`}>
-                        {activeTab === '2d' && (
-                            <div className="w-[400px] h-[500px] border-4 border-white/20 relative">
-                                {/* Rooms */}
-                                <div className="absolute top-0 left-0 w-1/2 h-1/3 border-b border-r border-white/20 flex items-center justify-center text-white/30 text-xs uppercase tracking-widest">Master Bed</div>
-                                <div className="absolute top-0 right-0 w-1/2 h-1/2 border-b border-l border-white/20 flex items-center justify-center text-white/30 text-xs uppercase tracking-widest">Living Area</div>
-                                <div className="absolute bottom-0 left-0 w-2/3 h-1/3 border-t border-r border-white/20 flex items-center justify-center text-white/30 text-xs uppercase tracking-widest">Garage</div>
-                            </div>
-                        )}
-                        {activeTab === 'layout' && (
-                            <div className="text-center">
-                                <span className="text-6xl block mb-4">🛋️</span>
-                                <p className="text-muted">Furniture Layout AI Generating...</p>
-                            </div>
-                        )}
-                        {activeTab === 'specs' && (
-                            <div className="glass-panel p-6 w-[300px]">
-                                <h3 className="text-gold border-b border-gold pb-2 mb-4 uppercase tracking-widest text-xs">Material Bill</h3>
-                                <div className="space-y-2 text-xs text-white">
-                                    <div className="flex justify-between"><span>Concrete</span> <span>400 bags</span></div>
-                                    <div className="flex justify-between"><span>Steel (16mm)</span> <span>200 units</span></div>
-                                    <div className="flex justify-between"><span>Glass Panels</span> <span>45 sqm</span></div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Optimizing Overlay */}
-                    {isOptimizing && (
-                        <div className="absolute inset-0 flex items-center justify-center z-30">
-                            <div className="text-center">
-                                <div className="w-16 h-16 border-4 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-                                <p className="text-gold uppercase tracking-widest text-sm animate-pulse">Re-calculating Light & Space...</p>
+                        <div>
+                            <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest mb-2 block">Budget (₦)</label>
+                            <div className="relative">
+                                <DollarSign size={14} className="absolute left-4 top-4 text-gray-500" />
+                                <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="150M" className="w-full p-4 pl-10 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl text-[#0F172A] dark:text-white text-sm outline-none focus:border-[#D4AF37] transition-all placeholder:text-gray-400" />
                             </div>
                         </div>
-                    )}
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest mb-2 block">Specs & Vision</label>
+                        <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe rooms, materials, lighting..." className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl text-[#0F172A] dark:text-white text-sm focus:border-[#D4AF37] outline-none resize-none transition-all placeholder:text-gray-400" />
+                    </div>
                 </div>
+                <button onClick={handleGenerate} disabled={!projectTitle || isGenerating} className="w-full py-4 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl mt-6 hover:bg-[#0F172A] hover:text-white dark:hover:bg-white dark:hover:text-[#0F172A] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#D4AF37]/20 group relative overflow-hidden">{isGenerating ? (<><Cpu className="animate-spin" size={18} /> GENERATING...</>) : (<><Zap size={18} /> GENERATE BLUEPRINT</>)}</button>
+            </div>
 
-                {/* FAB */}
-                <button
-                    onClick={handleOptimize}
-                    className="absolute bottom-8 right-8 bg-[var(--color-gold)] text-[var(--color-emerald)] px-6 py-4 font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_40px_rgba(212,175,55,0.6)] hover:scale-105 transition-all flex items-center gap-2 z-40"
-                >
-                    <span>✨</span> Auto-Optimize Flow
-                </button>
+            {/* RIGHT PANEL: VISUALIZATION (Themed) */}
+            <div className="flex-1 bg-[#FAFAF9] dark:bg-[#0F172A] relative overflow-y-auto h-screen p-4 md:p-8 flex flex-col items-center transition-colors duration-500">
+
+                {/* BACKGROUND GLOW (ADAPTIVE) */}
+                {!hasGenerated && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gray-200 dark:bg-[#D4AF37] opacity-20 dark:opacity-5 rounded-full blur-[120px] pointer-events-none"></div>
+                )}
+
+                {/* STANDBY STATE */}
+                {!isGenerating && !hasGenerated && (
+                    <div className="relative z-10 flex flex-col items-center justify-center opacity-40">
+                        <div className="w-24 h-24 rounded-2xl border border-gray-300 dark:border-gray-700 flex items-center justify-center mb-6 bg-white dark:bg-[#1E293B]">
+                            <HardHat size={48} className="text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <p className="text-2xl font-serif">System Standby</p>
+                    </div>
+                )}
+
+                {/* GENERATING STATE */}
+                {isGenerating && (
+                    <div className="w-full max-w-md flex flex-col items-center justify-center z-10 my-auto">
+                        <div className="relative mb-8">
+                            <div className="w-32 h-32 bg-white dark:bg-[#1E293B] rounded-full border-2 border-[#D4AF37] flex items-center justify-center relative overflow-hidden shadow-[0_0_30px_#D4AF3750]">
+                                <BrainCircuit size={48} className="text-[#D4AF37] animate-pulse relative z-10" />
+                                <div className="absolute inset-0 bg-[linear-gradient(transparent,rgba(212,175,55,0.2),transparent)] animate-[scan_1.5s_ease-in-out_infinite]"></div>
+                            </div>
+                            <div className="absolute inset-0 border-2 border-dashed border-[#D4AF37]/30 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                        </div>
+                        <h2 className="text-xl font-bold mb-4 tracking-widest animate-pulse">{statusText}</h2>
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden relative">
+                            <div className="h-full bg-gradient-to-r from-[#D4AF37] to-yellow-200 transition-all duration-1000 ease-out relative" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+                )}
+
+                {/* GENERATED RESULT (THEMED CARDS) */}
+                {hasGenerated && (
+                    <div className="w-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-10 duration-700 z-10 pb-20">
+
+                        {/* 1. 3D RENDER */}
+                        <div className="w-full bg-white dark:bg-[#1E293B] rounded-3xl overflow-hidden shadow-xl dark:shadow-2xl relative group border border-gray-100 dark:border-gray-800">
+                            <div className="absolute top-4 left-4 z-10 bg-[#D4AF37] text-[#0F172A] px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest flex items-center gap-1"><Layers size={10} /> 3D Visualization</div>
+                            <div className="absolute top-4 right-4 z-10"><Maximize2 size={20} className="text-white drop-shadow-md cursor-pointer hover:scale-110 transition-transform" /></div>
+                            <img src={getRenderImage()} alt="Render" className="w-full h-64 md:h-[400px] object-cover transition-transform duration-1000 group-hover:scale-105" />
+                        </div>
+
+                        {/* 2. BLUEPRINT CARD */}
+                        <div className="w-full rounded-3xl overflow-hidden shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800">
+                            <div className="bg-white dark:bg-[#1E293B] h-64 md:h-[400px] w-full relative flex items-center justify-center overflow-hidden rounded-t-3xl z-0">
+                                <div className="absolute top-4 left-4 z-20 bg-blue-600/90 backdrop-blur-md text-white px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"><Ruler size={12} /> Technical Drawing</div>
+                                {/* INVERT IMAGE IN DARK MODE FOR BETTER VIEWING */}
+                                <img src={blueprintUrl} alt="Blueprint" className="w-full h-full object-cover opacity-90 dark:invert-[.9]" />
+                            </div>
+
+                            {/* THEMED STATS FOOTER */}
+                            <div className="bg-white dark:bg-[#1E293B] text-[#0F172A] dark:text-white p-6 flex flex-wrap justify-between items-center gap-4 rounded-b-3xl relative z-10 border-t border-gray-100 dark:border-gray-800">
+                                <div><p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">Total Area</p><p className="text-xl font-bold">853 SQM</p></div>
+                                <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+                                <div><p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">Config</p><p className="text-xl font-bold">6 BED / 7 BATH</p></div>
+                                <div className="h-8 w-px bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+                                <div><p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">Est. Cost</p><p className="text-xl font-bold text-[#D4AF37]">₦{budget ? Number(budget).toLocaleString() : '363,200,000'}</p></div>
+                                <button className="ml-auto bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#D4AF37] dark:hover:bg-[#D4AF37] hover:text-[#0F172A] transition-colors flex items-center gap-2"><Download size={16} /> Save Plan</button>
+                            </div>
+                        </div>
+
+                    </div>
+                )}
             </div>
         </div>
     );

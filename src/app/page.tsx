@@ -1,118 +1,274 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { LayoutDashboard, PenTool, Home, Users, BookOpen, Scale, Search, Bell, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/app/context/AuthContext';
+import {
+    Building2, Users, ArrowRight, Shield,
+    Plus, HardHat, TrendingUp, MapPin, Edit2, X, Check,
+    UploadCloud, Link as LinkIcon, GraduationCap, Scale, Eye
+} from 'lucide-react';
 
-export default function HomePage() {
+export default function Home() {
+    const { user, updateListing } = useAuth();
+
+    // FIX HYDRATION ERROR
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => setIsMounted(true), []);
+
+    const userName = isMounted && user ? user.name.split(' ')[0] : 'Guest';
+    const userTier = isMounted && user ? user.tier : 'Free';
+    const myListings = isMounted && user?.myListings || [];
+
+    // EDITING STATE
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
+    const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+
+    // NEW: VIEWING STATE (FOR THE "RISE & BLUR" EFFECT)
+    const [viewingItem, setViewingItem] = useState<any | null>(null);
+
+    useEffect(() => {
+        if (editingItem) {
+            setEditPreviewUrl(editingItem.image);
+            setEditImageMode('upload');
+        }
+    }, [editingItem]);
+
+    const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setEditPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleEditUrlBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        if (url) setEditPreviewUrl(url);
+    };
+
+    const handleSaveEdit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editingItem) {
+            updateListing(editingItem.id, {
+                title: editingItem.title,
+                price: editingItem.price,
+                location: editingItem.location,
+                description: editingItem.description,
+                image: editPreviewUrl || editingItem.image
+            });
+            setEditingItem(null);
+        }
+    };
+
+    if (!isMounted) return <div className="min-h-screen bg-[#0F172A]"></div>;
+
     return (
-        <div className="flex min-h-screen">
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
 
-            {/* 1. ROYAL SAPPHIRE SIDEBAR */}
-            <aside className="fixed left-0 top-0 h-full w-64 bg-[#0F172A] text-white hidden md:flex flex-col z-50 shadow-2xl">
-                <div className="p-8">
-                    <h1 className="text-2xl font-serif tracking-widest text-[#D4AF37]">BELMONT</h1>
-                    <p className="text-xs text-gray-400 tracking-[0.2em]">ESTATES</p>
+            {/* HERO */}
+            <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-24 md:pb-32 relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <p className="text-[#D4AF37] font-bold tracking-widest text-xs uppercase mb-2">Welcome Back</p>
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">Hello, {userName}.</h1>
+                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Shield size={14} /><span>Status: <span className="text-white font-bold">{userTier} Tier</span></span>
+                    </div>
                 </div>
+            </div>
 
-                <nav className="flex-1 px-4 space-y-2 mt-8">
-                    <NavItem icon={<LayoutDashboard size={18} />} label="Central Hub" active />
-                    <NavItem icon={<PenTool size={18} />} label="Plan Generator" />
-                    <NavItem icon={<Home size={18} />} label="Listings" />
-                    <NavItem icon={<Users size={18} />} label="Collab" />
-                    <NavItem icon={<BookOpen size={18} />} label="Mentorship" />
-                    <NavItem icon={<Scale size={18} />} label="Legal" />
-                </nav>
+            {/* ACTION BUTTONS */}
+            <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-20 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                <div className="p-8 border-t border-white/10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center font-serif text-[#0F172A]">JD</div>
-                        <div>
-                            <p className="text-sm font-medium">John Doe</p>
-                            <p className="text-xs text-gray-400">Architect</p>
+                    {/* 1. Upload Property */}
+                    {/* 1. Upload Property - UPDATED LINK */}
+                    <Link href="/upload" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                <Plus size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Upload Property</h3>
+                                <p className="text-[10px] text-gray-500">List on Market</p>
+                            </div>
+                        </div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors">
+                            <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* 2. New Project */}
+                    <Link href="/create/plan" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><HardHat size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">New Project</h3><p className="text-[10px] text-gray-500">AI War Room</p></div></div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
+                    </Link>
+
+                    {/* 3. Find Mentor */}
+                    <Link href="/mentorship" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400"><GraduationCap size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Find Mentor</h3><p className="text-[10px] text-gray-500">Expert Guidance</p></div></div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
+                    </Link>
+
+                    {/* 4. Legal Help */}
+                    <Link href="/legal" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400"><Scale size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Legal Help</h3><p className="text-[10px] text-gray-500">Docs & Advice</p></div></div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
+                    </Link>
+
+                </div>
+            </div>
+
+            {/* MY LISTINGS GRID */}
+            {myListings.length > 0 && (
+                <div className="max-w-6xl mx-auto px-6 mb-12">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-[#0F172A] dark:text-white flex items-center gap-2"><Building2 size={18} /> My Recent Listings</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {myListings.map((item) => (
+                            <div
+                                key={item.id}
+                                onClick={() => setViewingItem(item)} // TRIGGER "RISE UP" EFFECT
+                                className="group bg-white dark:bg-[#1E293B] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative cursor-pointer"
+                            >
+                                {/* EDIT BUTTON (Stops Propagation so it doesn't trigger view mode) */}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
+                                    className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md p-2 rounded-full text-white hover:bg-[#D4AF37] transition-colors shadow-sm"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+
+                                <div className="h-48 w-full overflow-hidden">
+                                    <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                </div>
+                                <div className="p-5">
+                                    <h4 className="font-bold text-lg text-[#0F172A] dark:text-white line-clamp-1 mb-1">{item.title}</h4>
+                                    <p className="text-[#D4AF37] font-serif font-bold text-xl mb-3">{item.price}</p>
+                                    <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium"><MapPin size={12} /> {item.location}</p>
+                                        <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full">{item.status || 'Active'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* --- THE "RISE UP & BLUR" VIEWING MODAL --- */}
+            {viewingItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* BLURRED BACKDROP */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+                        onClick={() => setViewingItem(null)}
+                    ></div>
+
+                    {/* EXPANDED CARD */}
+                    <div className="relative bg-white dark:bg-[#1E293B] w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+                        <button
+                            onClick={() => setViewingItem(null)}
+                            className="absolute top-4 right-4 z-20 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="h-64 w-full relative">
+                            <img src={viewingItem.image} alt={viewingItem.title} className="w-full h-full object-cover" />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-24">
+                                <h2 className="text-3xl font-serif font-bold text-white mb-1">{viewingItem.title}</h2>
+                                <p className="text-[#D4AF37] font-bold text-xl">{viewingItem.price}</p>
+                            </div>
+                        </div>
+
+                        <div className="p-8">
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-6">
+                                <MapPin size={18} className="text-[#D4AF37]" />
+                                <span className="font-bold">{viewingItem.location}</span>
+                            </div>
+
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Description</h3>
+                            <p className="text-[#0F172A] dark:text-white leading-relaxed text-lg">
+                                {viewingItem.description || "No description provided for this property."}
+                            </p>
+
+                            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-4">
+                                <button
+                                    onClick={() => { setViewingItem(null); setEditingItem(viewingItem); }}
+                                    className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-[#0F172A] dark:text-white font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                                >
+                                    <Edit2 size={16} /> Edit Listing
+                                </button>
+                                <button
+                                    onClick={() => setViewingItem(null)}
+                                    className="px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl hover:bg-white transition-colors"
+                                >
+                                    Close View
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </aside>
+            )}
+            {/* ------------------------------------------- */}
 
-            {/* 2. MAIN CONTENT AREA (Limestone Background) */}
-            <main className="flex-1 md:ml-64 p-8 bg-[#FAFAF9]">
+            {/* FULL EDIT MODAL */}
+            {editingItem && (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#1E293B] w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in duration-300 max-h-[95vh] overflow-y-auto font-sans">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold font-serif text-[#0F172A] dark:text-white">Edit Property</h3>
+                            <button onClick={() => setEditingItem(null)} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"><X size={20} /></button>
+                        </div>
 
-                {/* Top Navigation */}
-                <header className="flex justify-between items-center mb-12">
-                    <div className="relative w-96">
-                        <Search className="absolute left-3 top-3 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search properties, clients, docs..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:border-[#0F172A]"
-                        />
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Property Image</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-4">
+                                <button onClick={() => setEditImageMode('upload')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${editImageMode === 'upload' ? 'bg-white dark:bg-[#0F172A] shadow-sm text-[#0F172A] dark:text-white' : 'text-gray-400'}`}>Device Upload</button>
+                                <button onClick={() => setEditImageMode('link')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${editImageMode === 'link' ? 'bg-white dark:bg-[#0F172A] shadow-sm text-[#0F172A] dark:text-white' : 'text-gray-400'}`}>Image Link</button>
+                            </div>
+                            <div className="aspect-video bg-gray-50 dark:bg-[#0F172A] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center relative overflow-hidden group">
+                                {editPreviewUrl ? (
+                                    <><img src={editPreviewUrl} alt="Preview" className="w-full h-full object-cover" /><button onClick={() => setEditPreviewUrl(null)} className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button></>
+                                ) : (
+                                    <div className="text-center p-6">
+                                        {editImageMode === 'upload' ? (
+                                            <><UploadCloud size={32} className="text-gray-300 mx-auto mb-2" /><p className="text-xs font-bold text-gray-500">Click to change image</p><input type="file" accept="image/*" onChange={handleEditFileChange} className="absolute inset-0 opacity-0 cursor-pointer" /></>
+                                        ) : (
+                                            <><LinkIcon size={32} className="text-gray-300 mx-auto mb-2" /><input type="text" placeholder="Paste image URL..." onBlur={handleEditUrlBlur} className="w-full p-2 text-xs bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-700 rounded-lg text-center outline-none focus:border-[#D4AF37]" /></>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSaveEdit} className="space-y-4">
+                            <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Title</label><input type="text" value={editingItem.title} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white" /></div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Price</label><input type="text" value={editingItem.price} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#D4AF37] font-bold font-serif" /></div>
+                                <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Location</label><input type="text" value={editingItem.location} onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white" /></div>
+                            </div>
+                            <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Description</label><textarea rows={4} value={editingItem.description} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white resize-none" /></div>
+                            <button type="submit" className="w-full py-4 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"><Check size={18} /> Save Changes</button>
+                        </form>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button className="p-2 bg-white rounded-full border border-gray-200 text-[#0F172A]">
-                            <Bell size={20} />
-                        </button>
-                    </div>
-                </header>
-
-                {/* Hero Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative h-96 rounded-3xl overflow-hidden shadow-sm mb-12 group"
-                >
-                    {/* Background Image */}
-                    <div
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
-                        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-2495db98dada?auto=format&fit=crop&q=80")' }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-
-                    {/* Hero Text */}
-                    <div className="absolute bottom-10 left-10 text-white">
-                        <p className="text-sm tracking-widest mb-2 uppercase text-[#D4AF37]">Welcome Back</p>
-                        <h2 className="text-5xl font-serif mb-4">The Crystal Villa</h2>
-                        <button className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-lg hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-[#0F172A] transition-all">
-                            Resume Project
-                        </button>
-                    </div>
-                </motion.div>
-
-                {/* Quick Actions Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <ActionCard title="New Project" icon={<PenTool />} delay={0.1} />
-                    <ActionCard title="Upload Site" icon={<Home />} delay={0.2} />
-                    <ActionCard title="Find Mentor" icon={<BookOpen />} delay={0.3} />
-                    <ActionCard title="Legal Help" icon={<Scale />} delay={0.4} />
                 </div>
+            )}
 
-            </main>
-        </div>
-    );
-}
-
-// Helper Components
-function NavItem({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
-    return (
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors ${active ? 'bg-[#D4AF37] text-[#0F172A] font-medium' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-            {icon}
-            <span className="text-sm">{label}</span>
-        </div>
-    );
-}
-
-function ActionCard({ title, icon, delay }: { title: string, icon: any, delay: number }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay }}
-            className="p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group"
-        >
-            <div className="w-12 h-12 bg-[#F1F5F9] rounded-lg flex items-center justify-center text-[#0F172A] group-hover:bg-[#0F172A] group-hover:text-[#D4AF37] transition-colors mb-4">
-                {icon}
+            {/* STATS */}
+            <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm"><div className="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400 text-xs font-bold uppercase"><Building2 size={14} /> Active Listings</div><p className="text-3xl font-serif font-bold text-[#0F172A] dark:text-white">{24 + myListings.length}</p></div>
+                <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm"><div className="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400 text-xs font-bold uppercase"><Users size={14} /> Collaborators</div><p className="text-3xl font-serif font-bold text-[#0F172A] dark:text-white">12</p></div>
+                <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm"><div className="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400 text-xs font-bold uppercase"><TrendingUp size={14} /> Market Trend</div><p className="text-3xl font-serif font-bold text-green-500">+8.4%</p></div>
             </div>
-            <h3 className="font-medium text-[#0F172A]">{title}</h3>
-        </motion.div>
+        </div>
     );
 }

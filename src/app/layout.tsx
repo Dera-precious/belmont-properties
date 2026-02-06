@@ -1,34 +1,61 @@
-import './globals.css';
-import { Cinzel, Manrope } from 'next/font/google';
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import EntranceAnim from "@/components/EntranceAnim";
+import { AuthProvider } from "@/app/context/AuthContext";
+import { ThemeProvider } from "@/app/context/ThemeContext";
+// NEW: Import the Booking Provider
+import { BookingProvider } from "@/app/context/BookingContext";
 
-// 1. Setup Fonts
-const cinzel = Cinzel({
-    subsets: ['latin'],
-    variable: '--font-cinzel',
-    display: 'swap',
-});
-
-const manrope = Manrope({
-    subsets: ['latin'],
-    variable: '--font-manrope',
-    display: 'swap',
-});
-
-export const metadata = {
-    title: 'Belmont Properties',
-    description: 'The Ultra-Luxury Real Estate Ecosystem',
+export const metadata: Metadata = {
+    title: "Belmont Properties",
+    description: "The Operating System for Real Estate",
 };
 
-// 2. The Fix: This "export default" function was missing or broken
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+};
+
 export default function RootLayout({
     children,
-}: {
+}: Readonly<{
     children: React.ReactNode;
-}) {
+}>) {
     return (
         <html lang="en">
-            <body className={`${cinzel.variable} ${manrope.variable} font-sans bg-[#FAFAF9] text-slate-900`}>
-                {children}
+            <head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+            </head>
+
+            <body className="bg-[#FAFAF9] dark:bg-[#0F172A] font-sans">
+                <ThemeProvider>
+                    <AuthProvider>
+                        {/* 1. WRAP THE APP WITH BOOKING PROVIDER */}
+                        <BookingProvider>
+
+                            {/* The Entrance Animation sits here */}
+                            <EntranceAnim />
+
+                            <div className="flex min-h-screen pb-20 md:pb-0 transition-colors duration-500">
+
+                                <Sidebar />
+
+                                <div className="flex-1 w-full bg-[#FAFAF9] dark:bg-[#0F172A] overflow-x-hidden text-[#0F172A] dark:text-white transition-colors duration-500">
+                                    {children}
+                                </div>
+
+                                <MobileNav />
+
+                            </div>
+                        </BookingProvider>
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );
