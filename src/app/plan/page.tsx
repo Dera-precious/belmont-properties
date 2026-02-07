@@ -39,6 +39,7 @@ export default function PlanGenerator() {
     const [error, setError] = useState('');
     const [resultData, setResultData] = useState({ cost: '0', area: '0', rooms: '0' });
 
+    // Reset prompt when style changes (optional UX choice)
     useEffect(() => {
         if (prompt && !isGenerating && !hasResult) {
             setPrompt('');
@@ -78,19 +79,22 @@ export default function PlanGenerator() {
         calculateFakeData();
     };
 
+    // THE ANIMATION LOGIC
     useEffect(() => {
         if (isGenerating) {
+            // Step Incrementer
             const interval = setInterval(() => {
                 setLoadingStep((prev) => {
                     if (prev < constructionSteps.length - 1) return prev + 1;
                     return prev;
                 });
-            }, 1500);
+            }, 1500); // Change text every 1.5s
 
+            // Total Duration Timeout
             const timeout = setTimeout(() => {
                 setIsGenerating(false);
                 setHasResult(true);
-            }, 7500);
+            }, 7500); // Total wait time matches steps (5 steps * 1.5s = 7.5s)
 
             return () => {
                 clearInterval(interval);
@@ -219,7 +223,7 @@ export default function PlanGenerator() {
                         </div>
                     )}
 
-                    {/* 2. LOADING STATE */}
+                    {/* 2. LOADING STATE (THE NEW ANIMATION) */}
                     {isGenerating && (
                         <div className="flex-1 w-full bg-[#0F172A] dark:bg-black rounded-2xl flex flex-col items-center justify-center text-white shadow-2xl overflow-hidden min-h-[500px]">
                             <div className="w-80 relative z-10">
@@ -228,6 +232,7 @@ export default function PlanGenerator() {
                                     <span>{Math.round(((loadingStep + 1) / constructionSteps.length) * 100)}%</span>
                                 </div>
 
+                                {/* Progress Bar Animation */}
                                 <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-8">
                                     <motion.div
                                         initial={{ width: "0%" }}
@@ -237,6 +242,7 @@ export default function PlanGenerator() {
                                     />
                                 </div>
 
+                                {/* Steps Animation */}
                                 <div className="space-y-4">
                                     {constructionSteps.map((step, index) => (
                                         <motion.div
