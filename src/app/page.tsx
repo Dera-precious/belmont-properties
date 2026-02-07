@@ -8,24 +8,44 @@ import {
     Building2, Users, ArrowRight, Shield,
     Plus, HardHat, TrendingUp, MapPin, Edit2, X, Check,
     UploadCloud, Link as LinkIcon, GraduationCap, Scale, Loader2,
-    Wand2 // ADDED: Magic Wand Icon for AI
+    Wand2 // Ensure Wand2 is imported
 } from 'lucide-react';
 
 export default function Home() {
+    // =========================================================
+    // 1. DECLARE ALL HOOKS FIRST (DO NOT PUT ANY 'IF' CHECKS YET)
+    // =========================================================
     const { user, updateListing } = useAuth();
     const router = useRouter();
-
     const [isMounted, setIsMounted] = useState(false);
+
+    // --- MOVE THESE VARIABLES UP HERE ---
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
+    const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+    const [viewingItem, setViewingItem] = useState<any | null>(null);
+    // =========================================================
+
     useEffect(() => setIsMounted(true), []);
 
-    // SECURITY CHECK: Redirect to Login if no user found
+    // SECURITY CHECK
     useEffect(() => {
         if (isMounted && !user) {
             router.push('/login');
         }
     }, [isMounted, user, router]);
 
-    // Show Loading while checking
+    // Editing Effect
+    useEffect(() => {
+        if (editingItem) {
+            setEditPreviewUrl(editingItem.image);
+            setEditImageMode('upload');
+        }
+    }, [editingItem]);
+
+    // =========================================================
+    // 2. NOW WE CAN DO THE LOADING CHECK (SAFE TO RETURN HERE)
+    // =========================================================
     if (!isMounted || !user) {
         return (
             <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] flex items-center justify-center">
@@ -34,23 +54,12 @@ export default function Home() {
         );
     }
 
-    // --- DATA PREPARATION ---
-    const userName = user?.name ? user.name.split(' ')[0] : 'Guest';
-    const userTier = user?.tier || 'Free';
-    const myListings = user?.myListings || [];
-
-    // EDITING STATE
-    const [editingItem, setEditingItem] = useState<any | null>(null);
-    const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
-    const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
-    const [viewingItem, setViewingItem] = useState<any | null>(null);
-
-    useEffect(() => {
-        if (editingItem) {
-            setEditPreviewUrl(editingItem.image);
-            setEditImageMode('upload');
-        }
-    }, [editingItem]);
+    // =========================================================
+    // 3. REST OF THE APP LOGIC
+    // =========================================================
+    const userName = user.name ? user.name.split(' ')[0] : 'Guest';
+    const userTier = user.tier || 'Free';
+    const myListings = user.myListings || [];
 
     const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
