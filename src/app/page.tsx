@@ -11,20 +11,38 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+    // 1. ALL HOOKS MUST BE DECLARED AT THE VERY TOP
     const { user, updateListing } = useAuth();
     const router = useRouter();
-
     const [isMounted, setIsMounted] = useState(false);
+
+    // EDITING STATE (Moved Up)
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
+    const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+
+    // VIEWING STATE (Moved Up)
+    const [viewingItem, setViewingItem] = useState<any | null>(null);
+
+    // 2. EFFECTS
     useEffect(() => setIsMounted(true), []);
 
-    // SECURITY CHECK: Redirect to Login if no user found
+    // Security Check
     useEffect(() => {
         if (isMounted && !user) {
             router.push('/login');
         }
     }, [isMounted, user, router]);
 
-    // Show Loading while checking
+    // Editing Effect
+    useEffect(() => {
+        if (editingItem) {
+            setEditPreviewUrl(editingItem.image);
+            setEditImageMode('upload');
+        }
+    }, [editingItem]);
+
+    // 3. NOW WE CAN DO THE LOADING CHECK (EARLY RETURN)
     if (!isMounted || !user) {
         return (
             <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] flex items-center justify-center">
@@ -33,24 +51,10 @@ export default function Home() {
         );
     }
 
-    // --- CRASH FIX: SAFETY CHECKS ADDED BELOW ---
-    // We use "?" to check if data exists before trying to read it.
-    const userName = user?.name ? user.name.split(' ')[0] : 'Guest';
-    const userTier = user?.tier || 'Free';
-    const myListings = user?.myListings || [];
-
-    // EDITING STATE
-    const [editingItem, setEditingItem] = useState<any | null>(null);
-    const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
-    const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
-    const [viewingItem, setViewingItem] = useState<any | null>(null);
-
-    useEffect(() => {
-        if (editingItem) {
-            setEditPreviewUrl(editingItem.image);
-            setEditImageMode('upload');
-        }
-    }, [editingItem]);
+    // 4. DATA PREPARATION (Safe to do here)
+    const userName = user.name ? user.name.split(' ')[0] : 'Guest';
+    const userTier = user.tier || 'Free';
+    const myListings = user.myListings || [];
 
     const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -177,23 +181,63 @@ export default function Home() {
                 </div>
             )}
 
-            {/* --- VIEW MODAL --- */}
+            {/* --- THE "RISE UP & BLUR" VIEWING MODAL --- */}
             {viewingItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setViewingItem(null)}></div>
-                    <div className="relative bg-white dark:bg-[#1E293B] w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                        <button onClick={() => setViewingItem(null)} className="absolute top-4 right-4 z-20 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-colors"><X size={20} /></button>
-                        <div className="h-64 w-full relative"><img src={viewingItem.image} alt={viewingItem.title} className="w-full h-full object-cover" /></div>
+                    {/* BLURRED BACKDROP */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+                        onClick={() => setViewingItem(null)}
+                    ></div>
+
+                    {/* EXPANDED CARD */}
+                    <div className="relative bg-white dark:bg-[#1E293B] w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+                        <button
+                            onClick={() => setViewingItem(null)}
+                            className="absolute top-4 right-4 z-20 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="h-64 w-full relative">
+                            <img src={viewingItem.image} alt={viewingItem.title} className="w-full h-full object-cover" />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-24">
+                                <h2 className="text-3xl font-serif font-bold text-white mb-1">{viewingItem.title}</h2>
+                                <p className="text-[#D4AF37] font-bold text-xl">{viewingItem.price}</p>
+                            </div>
+                        </div>
+
                         <div className="p-8">
-                            <h2 className="text-3xl font-serif font-bold text-[#0F172A] dark:text-white mb-1">{viewingItem.title}</h2>
-                            <p className="text-[#D4AF37] font-bold text-xl mb-4">{viewingItem.price}</p>
-                            <p className="text-gray-500 dark:text-gray-300 leading-relaxed">{viewingItem.description}</p>
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-6">
+                                <MapPin size={18} className="text-[#D4AF37]" />
+                                <span className="font-bold">{viewingItem.location}</span>
+                            </div>
+
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Description</h3>
+                            <p className="text-[#0F172A] dark:text-white leading-relaxed text-lg">
+                                {viewingItem.description || "No description provided for this property."}
+                            </p>
+
+                            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-4">
+                                <button
+                                    onClick={() => { setViewingItem(null); setEditingItem(viewingItem); }}
+                                    className="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-[#0F172A] dark:text-white font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                                >
+                                    <Edit2 size={16} /> Edit Listing
+                                </button>
+                                <button
+                                    onClick={() => setViewingItem(null)}
+                                    className="px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl hover:bg-white transition-colors"
+                                >
+                                    Close View
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* EDIT MODAL */}
+            {/* FULL EDIT MODAL */}
             {editingItem && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-[#1E293B] w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in duration-300 max-h-[95vh] overflow-y-auto font-sans">
@@ -201,13 +245,35 @@ export default function Home() {
                             <h3 className="text-xl font-bold font-serif text-[#0F172A] dark:text-white">Edit Property</h3>
                             <button onClick={() => setEditingItem(null)} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"><X size={20} /></button>
                         </div>
-                        {/* Edit Form */}
+
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Property Image</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-4">
+                                <button onClick={() => setEditImageMode('upload')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${editImageMode === 'upload' ? 'bg-white dark:bg-[#0F172A] shadow-sm text-[#0F172A] dark:text-white' : 'text-gray-400'}`}>Device Upload</button>
+                                <button onClick={() => setEditImageMode('link')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${editImageMode === 'link' ? 'bg-white dark:bg-[#0F172A] shadow-sm text-[#0F172A] dark:text-white' : 'text-gray-400'}`}>Image Link</button>
+                            </div>
+                            <div className="aspect-video bg-gray-50 dark:bg-[#0F172A] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center relative overflow-hidden group">
+                                {editPreviewUrl ? (
+                                    <><img src={editPreviewUrl} alt="Preview" className="w-full h-full object-cover" /><button onClick={() => setEditPreviewUrl(null)} className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X size={16} /></button></>
+                                ) : (
+                                    <div className="text-center p-6">
+                                        {editImageMode === 'upload' ? (
+                                            <><UploadCloud size={32} className="text-gray-300 mx-auto mb-2" /><p className="text-xs font-bold text-gray-500">Click to change image</p><input type="file" accept="image/*" onChange={handleEditFileChange} className="absolute inset-0 opacity-0 cursor-pointer" /></>
+                                        ) : (
+                                            <><LinkIcon size={32} className="text-gray-300 mx-auto mb-2" /><input type="text" placeholder="Paste image URL..." onBlur={handleEditUrlBlur} className="w-full p-2 text-xs bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-700 rounded-lg text-center outline-none focus:border-[#D4AF37]" /></>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         <form onSubmit={handleSaveEdit} className="space-y-4">
                             <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Title</label><input type="text" value={editingItem.title} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white" /></div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Price</label><input type="text" value={editingItem.price} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#D4AF37] font-bold font-serif" /></div>
                                 <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Location</label><input type="text" value={editingItem.location} onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white" /></div>
                             </div>
+                            <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Description</label><textarea rows={4} value={editingItem.description} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white resize-none" /></div>
                             <button type="submit" className="w-full py-4 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"><Check size={18} /> Save Changes</button>
                         </form>
                     </div>
