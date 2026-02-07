@@ -6,10 +6,9 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
-// FIX: Imported ShieldCheck for Trust Center
 import {
     LayoutDashboard, Search, Users, BookOpen, Scale,
-    Menu, X, LogOut, User, Moon, Sun, ShieldCheck
+    Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock // Added Lock icon
 } from 'lucide-react';
 
 export default function MobileNav() {
@@ -25,10 +24,10 @@ export default function MobileNav() {
         { name: 'Listings', icon: <Search size={20} />, path: '/listings' },
         { name: 'Collab', icon: <Users size={20} />, path: '/collab' },
         { name: 'Mentorship', icon: <BookOpen size={20} />, path: '/mentorship' },
-        // ADDED: Trust Center
         { name: 'Trust Center', icon: <ShieldCheck size={20} />, path: '/services' },
-        // RENAMED: Legal Docs
         { name: 'Legal Docs', icon: <Scale size={20} />, path: '/legal' },
+        // ADDED: Admin Panel
+        { name: 'Admin Panel', icon: <Lock size={20} />, path: '/admin' },
     ];
 
     return (
