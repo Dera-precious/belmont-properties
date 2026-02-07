@@ -3,29 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Wand2, Download, Layers, Maximize2, AlertCircle, CheckCircle2, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import {
+    ArrowLeft, Wand2, Download, Layers, Maximize2,
+    AlertCircle, FileText, Image as ImageIcon, Loader2,
+    Brain, Cpu, Sparkles
+} from 'lucide-react';
 
+// 1. UPDATED IMAGE LINKS (As requested)
 const styleImages: Record<string, { exterior: string, blueprint: string }> = {
     Modern: {
-        exterior: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop&v=7',
+        exterior: 'https://i.pinimg.com/1200x/4f/91/2e/4f912e41011355b608e2b0b66cc5ef61.jpg',
         blueprint: 'https://www.maramani.com/cdn/shop/products/1._Ground_Floor_Plan.jpg?v=1698137242&width=800'
     },
     Industrial: {
-        exterior: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2670&auto=format&fit=crop&v=7',
+        exterior: 'https://mha.us.com/wp-content/uploads/2023/04/Overall-Image-1536x954.jpg',
         blueprint: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?q=80&w=2574&auto=format&fit=crop&v=7'
     },
     Traditional: {
-        exterior: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=2670&auto=format&fit=crop&v=7',
+        exterior: 'https://cdn.trendir.com/wp-content/uploads/old/house-design/assets_c/2014/01/traditional-exterior-hides-colourfully-contemporary-interior-1-pool-thumb-970xauto-30359.jpg',
         blueprint: 'https://images.unsplash.com/photo-1596522354195-e8455305bc3d?q=80&w=2574&auto=format&fit=crop&v=7'
     }
 };
 
 const constructionSteps = [
-    "Analyzing terrain topography...",
-    "Calculating structural load...",
-    "Pouring digital foundation...",
-    "Erecting structural frame...",
-    "Rendering photorealistic textures..."
+    "Neural Engine Initialized...",
+    "Analyzing Terrain Topography...",
+    "Calculating Structural Load...",
+    "Optimizing Floor Plan Layout...",
+    "Rendering Photorealistic Textures..."
 ];
 
 export default function PlanGenerator() {
@@ -39,7 +44,6 @@ export default function PlanGenerator() {
     const [error, setError] = useState('');
     const [resultData, setResultData] = useState({ cost: '0', area: '0', rooms: '0' });
 
-    // Reset prompt when style changes (optional UX choice)
     useEffect(() => {
         if (prompt && !isGenerating && !hasResult) {
             setPrompt('');
@@ -79,22 +83,19 @@ export default function PlanGenerator() {
         calculateFakeData();
     };
 
-    // THE ANIMATION LOGIC
     useEffect(() => {
         if (isGenerating) {
-            // Step Incrementer
             const interval = setInterval(() => {
                 setLoadingStep((prev) => {
                     if (prev < constructionSteps.length - 1) return prev + 1;
                     return prev;
                 });
-            }, 1500); // Change text every 1.5s
+            }, 1500);
 
-            // Total Duration Timeout
             const timeout = setTimeout(() => {
                 setIsGenerating(false);
                 setHasResult(true);
-            }, 7500); // Total wait time matches steps (5 steps * 1.5s = 7.5s)
+            }, 7500);
 
             return () => {
                 clearInterval(interval);
@@ -223,50 +224,45 @@ export default function PlanGenerator() {
                         </div>
                     )}
 
-                    {/* 2. LOADING STATE (THE NEW ANIMATION) */}
+                    {/* 2. LOADING STATE (THE GOLD BRAIN ANIMATION) */}
                     {isGenerating && (
-                        <div className="flex-1 w-full bg-[#0F172A] dark:bg-black rounded-2xl flex flex-col items-center justify-center text-white shadow-2xl overflow-hidden min-h-[500px]">
-                            <div className="w-80 relative z-10">
-                                <div className="flex justify-between text-xs uppercase tracking-widest text-[#D4AF37] mb-2 font-bold">
-                                    <span>System Active</span>
-                                    <span>{Math.round(((loadingStep + 1) / constructionSteps.length) * 100)}%</span>
-                                </div>
+                        <div className="flex-1 w-full bg-[#0F172A] dark:bg-black rounded-2xl flex flex-col items-center justify-center text-white shadow-2xl overflow-hidden min-h-[500px] relative">
 
-                                {/* Progress Bar Animation */}
-                                <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-8">
-                                    <motion.div
-                                        initial={{ width: "0%" }}
-                                        animate={{ width: "100%" }}
-                                        transition={{ duration: 7.5, ease: "linear" }}
-                                        className="h-full bg-[#D4AF37] shadow-[0_0_15px_#D4AF37]"
-                                    />
-                                </div>
+                            {/* Background Glow */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#D4AF37] rounded-full blur-[100px] opacity-20 animate-pulse"></div>
 
-                                {/* Steps Animation */}
-                                <div className="space-y-4">
-                                    {constructionSteps.map((step, index) => (
-                                        <motion.div
-                                            key={index}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{
-                                                opacity: index === loadingStep ? 1 : index < loadingStep ? 0.3 : 0,
-                                                x: index === loadingStep ? 0 : index < loadingStep ? 0 : -10
-                                            }}
-                                            className="flex items-center gap-3"
-                                        >
-                                            {index < loadingStep ? (
-                                                <CheckCircle2 size={18} className="text-green-500" />
-                                            ) : index === loadingStep ? (
-                                                <Loader2 size={18} className="text-[#D4AF37] animate-spin" />
-                                            ) : (
-                                                <div className="w-4 h-4 rounded-full border border-gray-600" />
-                                            )}
-                                            <span className={`text-sm ${index === loadingStep ? 'text-white font-bold' : 'text-gray-400'}`}>
-                                                {step}
-                                            </span>
-                                        </motion.div>
-                                    ))}
-                                </div>
+                            {/* The Brain */}
+                            <motion.div
+                                animate={{ scale: [1, 1.1, 1], filter: ["brightness(1)", "brightness(1.3)", "brightness(1)"] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                className="relative z-10 mb-8"
+                            >
+                                <Brain size={80} className="text-[#D4AF37] drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]" />
+                                <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+                                    className="absolute -top-4 -left-4 w-28 h-28 border border-dashed border-[#D4AF37]/30 rounded-full"
+                                />
+                            </motion.div>
+
+                            {/* The Loading Text */}
+                            <div className="h-8 relative z-10 text-center">
+                                <motion.p
+                                    key={loadingStep}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="text-[#D4AF37] font-mono text-sm tracking-widest uppercase font-bold"
+                                >
+                                    {constructionSteps[loadingStep]}
+                                </motion.p>
+                            </div>
+
+                            {/* Processing Chips */}
+                            <div className="flex gap-2 mt-4 opacity-50">
+                                <Cpu size={14} className="text-[#D4AF37] animate-pulse" />
+                                <Sparkles size={14} className="text-[#D4AF37] animate-pulse delay-75" />
+                                <Cpu size={14} className="text-[#D4AF37] animate-pulse delay-150" />
                             </div>
                         </div>
                     )}
