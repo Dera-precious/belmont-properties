@@ -276,7 +276,7 @@ export default function PlanGenerator() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
-                                className="flex-[3] bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm overflow-hidden relative group border border-gray-200 dark:border-gray-700 min-h-[300px]"
+                                className="flex-[2] bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm overflow-hidden relative group border border-gray-200 dark:border-gray-700 min-h-[300px]"
                             >
                                 <div
                                     className="absolute inset-0 bg-cover bg-center transition-transform duration-[3s] group-hover:scale-105"
