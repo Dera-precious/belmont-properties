@@ -27,7 +27,8 @@ export default function WalletPage() {
         <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans transition-colors duration-500 pb-32">
 
             {/* HERO SECTION */}
-            <div className="bg-[#0F172A] text-white p-8 md:p-12 relative overflow-hidden shadow-2xl">
+            {/* Added extra padding bottom (pb-32) to create space for the overlap on desktop */}
+            <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-12 md:pb-32 relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
                 <div className="max-w-5xl mx-auto relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
@@ -37,11 +38,11 @@ export default function WalletPage() {
                         <p className="text-gray-400 text-sm">Manage funds, payments, and escrow securely.</p>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button onClick={() => setShowFundModal(true)} className="px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex items-center gap-2 hover:bg-[#b5952f] transition-colors shadow-lg">
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <button onClick={() => setShowFundModal(true)} className="flex-1 md:flex-none px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-[#b5952f] transition-colors shadow-lg">
                             <Plus size={18} /> Top Up
                         </button>
-                        <button className="px-6 py-3 bg-white/10 backdrop-blur border border-white/20 text-white font-bold rounded-xl flex items-center gap-2 hover:bg-white/20 transition-colors">
+                        <button className="flex-1 md:flex-none px-6 py-3 bg-white/10 backdrop-blur border border-white/20 text-white font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-white/20 transition-colors">
                             <ArrowUpRight size={18} /> Withdraw
                         </button>
                     </div>
@@ -49,7 +50,10 @@ export default function WalletPage() {
             </div>
 
             {/* MAIN CONTENT */}
-            <div className="max-w-5xl mx-auto px-6 -mt-12 relative z-20 space-y-8">
+            {/* FIX: Removed negative margin on mobile (mt-6). 
+                Kept negative margin only on desktop (md:-mt-12).
+            */}
+            <div className="max-w-5xl mx-auto px-6 mt-6 md:-mt-12 relative z-20 space-y-8">
 
                 {/* CARDS ROW */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
