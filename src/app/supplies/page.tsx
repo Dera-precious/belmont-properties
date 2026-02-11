@@ -24,20 +24,104 @@ const categories = [
     { id: 'smart', name: 'Smart Home', icon: <Wifi size={18} />, count: '90+' },
 ];
 
-// --- DATA: SAMPLE PRODUCTS (Lazy Protocol: Small, Dense) ---
+// --- DATA: PRODUCTS (UPDATED WITH CORRECT IMAGES) ---
 const products = [
-    { id: 1, name: "Golden Teak Tiles", price: "₦12,500/sqm", category: "Flooring", image: "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?q=80&w=500&auto=format&fit=crop", rating: 4.8 },
-    { id: 2, name: "Smart Dimmer Switch", price: "₦45,000", category: "Electrical", image: "https://images.unsplash.com/photo-1558002038-1091a166111c?q=80&w=500&auto=format&fit=crop", rating: 4.9 },
-    { id: 3, name: "Italian Marble Sink", price: "₦180,000", category: "Kitchen", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=500&auto=format&fit=crop", rating: 4.7 },
-    { id: 4, name: "Solar Panel 500W", price: "₦210,000", category: "Electrical", image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=500&auto=format&fit=crop", rating: 4.6 },
-    { id: 5, name: "Dulux Pure White", price: "₦45,000", category: "Paints", image: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=500&auto=format&fit=crop", rating: 4.5 },
-    { id: 6, name: "Copper Piping 15mm", price: "₦8,500/m", category: "Plumbing", image: "https://images.unsplash.com/photo-1581092921461-eab62e97a782?q=80&w=500&auto=format&fit=crop", rating: 4.8 },
-    { id: 7, name: "Velvet Accent Chair", price: "₦150,000", category: "Decor", image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=500&auto=format&fit=crop", rating: 4.9 },
-    { id: 8, name: "HVAC Duct Vent", price: "₦15,000", category: "HVAC", image: "https://images.unsplash.com/photo-1521207418485-99c705420785?q=80&w=500&auto=format&fit=crop", rating: 4.2 },
-    { id: 9, name: "Red Brick Facade", price: "₦220/pc", category: "Structure", image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=500&auto=format&fit=crop", rating: 4.7 },
-    { id: 10, name: "Garden Solar Light", price: "₦12,000", category: "Outdoor", image: "https://images.unsplash.com/photo-1596230529625-7ee54133528b?q=80&w=500&auto=format&fit=crop", rating: 4.4 },
-    { id: 11, name: "Smart Lock Pro", price: "₦185,000", category: "Smart Home", image: "https://images.unsplash.com/photo-1558002038-1091a166111c?q=80&w=500&auto=format&fit=crop", rating: 4.9 },
-    { id: 12, name: "Teak Floorboard", price: "₦18,000/sqm", category: "Flooring", image: "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?q=80&w=500&auto=format&fit=crop", rating: 4.6 },
+    {
+        id: 1,
+        name: "Golden Teak Tiles",
+        price: "₦12,500/sqm",
+        category: "Flooring",
+        image: "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?q=80&w=500&auto=format&fit=crop",
+        rating: 4.8
+    },
+    {
+        id: 2,
+        name: "Smart Dimmer Switch",
+        price: "₦45,000",
+        category: "Electrical",
+        image: "https://images.unsplash.com/photo-1559735846-d2d9327d722f?q=80&w=500&auto=format&fit=crop", // Corrected: Light Switch
+        rating: 4.9
+    },
+    {
+        id: 3,
+        name: "Italian Marble Sink",
+        price: "₦180,000",
+        category: "Kitchen",
+        image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=500&auto=format&fit=crop",
+        rating: 4.7
+    },
+    {
+        id: 4,
+        name: "Solar Panel 500W",
+        price: "₦210,000",
+        category: "Electrical",
+        image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=500&auto=format&fit=crop",
+        rating: 4.6
+    },
+    {
+        id: 5,
+        name: "Dulux Pure White",
+        price: "₦45,000",
+        category: "Paints",
+        image: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=500&auto=format&fit=crop",
+        rating: 4.5
+    },
+    {
+        id: 6,
+        name: "Copper Piping 15mm",
+        price: "₦8,500/m",
+        category: "Plumbing",
+        image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=500&auto=format&fit=crop", // Corrected: Copper Pipes
+        rating: 4.8
+    },
+    {
+        id: 7,
+        name: "Velvet Accent Chair",
+        price: "₦150,000",
+        category: "Decor",
+        image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=500&auto=format&fit=crop",
+        rating: 4.9
+    },
+    {
+        id: 8,
+        name: "HVAC Duct Vent",
+        price: "₦15,000",
+        category: "HVAC",
+        image: "https://images.unsplash.com/photo-1521207418485-99c705420785?q=80&w=500&auto=format&fit=crop",
+        rating: 4.2
+    },
+    {
+        id: 9,
+        name: "Red Brick Facade",
+        price: "₦220/pc",
+        category: "Structure",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=500&auto=format&fit=crop", // Corrected: Red Bricks
+        rating: 4.7
+    },
+    {
+        id: 10,
+        name: "Garden Solar Light",
+        price: "₦12,000",
+        category: "Outdoor",
+        image: "https://images.unsplash.com/photo-1507646227500-4d389b0012be?q=80&w=500&auto=format&fit=crop", // Corrected: Garden Light
+        rating: 4.4
+    },
+    {
+        id: 11,
+        name: "Smart Lock Pro",
+        price: "₦185,000",
+        category: "Smart Home",
+        image: "https://images.unsplash.com/photo-1558002038-1091a166111c?q=80&w=500&auto=format&fit=crop", // Corrected: Smart Home Controller
+        rating: 4.9
+    },
+    {
+        id: 12,
+        name: "Teak Floorboard",
+        price: "₦18,000/sqm",
+        category: "Flooring",
+        image: "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?q=80&w=500&auto=format&fit=crop",
+        rating: 4.6
+    },
 ];
 
 export default function SupplyDepot() {
@@ -54,7 +138,7 @@ export default function SupplyDepot() {
             <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Link href="/"><button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><ArrowLeft size={20} /></button></Link>
-                    <h1 className="font-serif font-bold text-xl">The Supply Depot</h1>
+                    <h1 className="font-serif font-bold text-xl">Supplies</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="p-2"><Search size={20} /></button>
