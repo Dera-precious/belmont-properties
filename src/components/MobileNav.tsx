@@ -8,11 +8,12 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 import {
     LayoutDashboard, Search, Users, BookOpen, Scale,
-    Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock
+    Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock,
+    ShoppingBag // ADDED: ShoppingBag Icon
 } from 'lucide-react';
 
 export default function MobileNav() {
-    // 1. ALWAYS DECLARE HOOKS FIRST (Before any return statements)
+    // 1. ALWAYS DECLARE HOOKS FIRST
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const { user, logout } = useAuth();
@@ -26,12 +27,13 @@ export default function MobileNav() {
         { name: 'Collab', icon: <Users size={20} />, path: '/collab' },
         { name: 'Mentorship', icon: <BookOpen size={20} />, path: '/mentorship' },
         { name: 'Trust Center', icon: <ShieldCheck size={20} />, path: '/services' },
+        // ADDED: Supplies Link
+        { name: 'Supplies', icon: <ShoppingBag size={20} />, path: '/supplies' },
         { name: 'Legal Docs', icon: <Scale size={20} />, path: '/legal' },
         { name: 'Admin Panel', icon: <Lock size={20} />, path: '/admin' },
     ];
 
     // 2. NOW WE CAN DO THE CHECK
-    // If we are on login or onboarding, don't show the nav
     if (pathname === '/login' || pathname?.includes('/onboarding')) {
         return null;
     }

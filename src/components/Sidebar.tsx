@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Building2, Users, BookOpen, ShieldCheck, Scale, Moon, Sun, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    LayoutDashboard, Building2, Users, BookOpen, ShieldCheck, Scale,
+    Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag // ADDED: ShoppingBag Icon
+} from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -12,11 +15,13 @@ const menuItems = [
     { icon: Building2, label: "Listings", href: "/listings" },
     { icon: Users, label: "Collab", href: "/collab" },
     { icon: BookOpen, label: "Mentorship", href: "/mentorship" },
-    // 1. TRUST CENTER (Booking Police/Drones)
+    // 1. TRUST CENTER
     { icon: ShieldCheck, label: "Trust Center", href: "/services" },
-    // 2. LEGAL HUB (Document Generator)
+    // 2. SUPPLIES (New Marketplace Link)
+    { icon: ShoppingBag, label: "Supplies", href: "/supplies" },
+    // 3. LEGAL HUB
     { icon: Scale, label: "Legal Docs", href: "/legal" },
-    // 3. ADMIN PANEL (New "God Mode" Link)
+    // 4. ADMIN PANEL
     { icon: LayoutDashboard, label: "Admin Panel", href: "/admin" },
 ];
 

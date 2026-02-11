@@ -8,7 +8,8 @@ import {
     Building2, Users, ArrowRight, Shield,
     Plus, HardHat, TrendingUp, MapPin, Edit2, X, Check,
     UploadCloud, Link as LinkIcon, GraduationCap, Scale, Loader2,
-    Wand2 // Ensure Wand2 is imported
+    Wand2, // Existing AI Icon
+    ShoppingBag // NEW: Imported for Supply Depot
 } from 'lucide-react';
 
 export default function Home() {
@@ -108,7 +109,8 @@ export default function Home() {
 
             {/* ACTION BUTTONS */}
             <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-20 mb-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Updated Grid to fit 5 items comfortably on large screens */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
 
                     {/* 1. Upload Property */}
                     <Link href="/upload" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
@@ -126,7 +128,7 @@ export default function Home() {
                         </div>
                     </Link>
 
-                    {/* 2. AI Architect (UPDATED LINK TO /plan) */}
+                    {/* 2. AI Architect */}
                     <Link href="/plan" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]">
@@ -151,6 +153,20 @@ export default function Home() {
                     {/* 4. Trust Center */}
                     <Link href="/services" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400"><Shield size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Trust Center</h3><p className="text-[10px] text-gray-500">Book Security</p></div></div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
+                    </Link>
+
+                    {/* 5. SUPPLY DEPOT (NEW) */}
+                    <Link href="/supplies" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                <ShoppingBag size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Supplies</h3>
+                                <p className="text-[10px] text-gray-500">Materials Market</p>
+                            </div>
+                        </div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
@@ -246,6 +262,7 @@ export default function Home() {
                                 <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Price</label><input type="text" value={editingItem.price} onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#D4AF37] font-bold font-serif" /></div>
                                 <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Location</label><input type="text" value={editingItem.location} onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white" /></div>
                             </div>
+                            <div><label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Description</label><textarea rows={4} value={editingItem.description} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} className="w-full p-4 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] text-[#0F172A] dark:text-white resize-none" /></div>
                             <button type="submit" className="w-full py-4 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"><Check size={18} /> Save Changes</button>
                         </form>
                     </div>
