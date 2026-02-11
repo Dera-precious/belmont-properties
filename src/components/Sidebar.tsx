@@ -5,14 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Building2, Users, BookOpen, ShieldCheck, Scale,
-    Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag, Wallet // ADDED: Wallet Icon
+    Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag, Wallet,
+    Home as HomeIcon // ADDED: Home Icon
 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
 const menuItems = [
     { icon: LayoutDashboard, label: "Central Hub", href: "/" },
-    { icon: Wallet, label: "Wallet", href: "/wallet" }, // NEW WALLET LINK
+    { icon: HomeIcon, label: "My Home", href: "/tenant" }, // NEW: Tenant Portal
+    { icon: Wallet, label: "Wallet", href: "/wallet" },
     { icon: Building2, label: "Listings", href: "/listings" },
     { icon: Users, label: "Collab", href: "/collab" },
     { icon: BookOpen, label: "Mentorship", href: "/mentorship" },
@@ -32,6 +34,8 @@ export default function Sidebar() {
 
     return (
         <aside className={`hidden md:flex flex-col bg-[#0F172A] text-white h-screen sticky top-0 border-r border-gray-800 transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'}`}>
+
+            {/* COLLAPSE ARROW */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute -right-3 top-10 bg-[#D4AF37] text-[#0F172A] p-1 rounded-full shadow-lg hover:scale-110 transition-transform z-50"
@@ -39,7 +43,8 @@ export default function Sidebar() {
                 {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             </button>
 
-            <div className={`p-8 ${isCollapsed ? 'items-center px-4' : ''} flex flex-col`}>
+            {/* HEADER */}
+            <div className={`p-8 ${isCollapsed ? 'items-center px-4' : ''} flex flex-col shrink-0`}>
                 {isCollapsed ? (
                     <h1 className="text-xl font-serif font-bold text-[#D4AF37]">B</h1>
                 ) : (
@@ -50,7 +55,9 @@ export default function Sidebar() {
                 )}
             </div>
 
-            <nav className="flex-1 px-4 space-y-2">
+            {/* SCROLLABLE NAVIGATION AREA */}
+            {/* Added: overflow-y-auto no-scrollbar */}
+            <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar pb-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -66,7 +73,8 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-gray-800 space-y-4">
+            {/* FOOTER (Theme & Profile) */}
+            <div className="p-4 border-t border-gray-800 space-y-4 shrink-0 bg-[#0F172A]">
                 <button onClick={toggleTheme} className={`flex items-center justify-between w-full p-3 text-xs font-bold text-gray-400 uppercase tracking-wider bg-white/5 hover:bg-white/10 rounded-xl transition-colors ${isCollapsed ? 'justify-center' : ''}`}>
                     {!isCollapsed && <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>}
                     {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
