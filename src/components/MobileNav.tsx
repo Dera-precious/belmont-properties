@@ -38,8 +38,8 @@ export default function MobileNav() {
 
     return (
         <>
-            {/* 1. BOTTOM BAR (Fixed & Always Visible) */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 p-4 flex justify-around items-center z-50 transition-colors duration-500 safe-area-bottom">
+            {/* 1. BOTTOM BAR (Always Visible - High Z-Index) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 p-4 flex justify-around items-center z-50 transition-colors duration-500 safe-area-bottom shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                 <Link href="/" className={`p-2 rounded-xl ${pathname === '/' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
                     <LayoutDashboard size={24} />
                 </Link>
@@ -47,7 +47,7 @@ export default function MobileNav() {
                     <Search size={24} />
                 </Link>
                 <div className="relative -top-5">
-                    <button onClick={toggleMenu} className="w-14 h-14 bg-[#0F172A] dark:bg-[#D4AF37] rounded-full flex items-center justify-center text-white dark:text-[#0F172A] shadow-lg hover:scale-105 transition-transform">
+                    <button onClick={toggleMenu} className="w-14 h-14 bg-[#0F172A] dark:bg-[#D4AF37] rounded-full flex items-center justify-center text-white dark:text-[#0F172A] shadow-xl hover:scale-105 transition-transform border-4 border-[#FAFAF9] dark:border-[#0F172A]">
                         {isOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -59,13 +59,14 @@ export default function MobileNav() {
                 </Link>
             </div>
 
-            {/* 2. FULL SCREEN MENU OVERLAY (Scrollable) */}
+            {/* 2. FULL SCREEN MENU OVERLAY (Scroll Fixed) */}
             {isOpen && (
-                <div className="md:hidden fixed inset-0 bg-[#FAFAF9] dark:bg-[#0F172A] z-40 flex flex-col overflow-y-auto animate-in slide-in-from-bottom-10 duration-300">
+                <div className="md:hidden fixed inset-0 bg-[#FAFAF9] dark:bg-[#0F172A] z-40 flex flex-col animate-in slide-in-from-bottom-10 duration-300">
 
-                    {/* Inner Container for Padding & Spacing */}
-                    <div className="p-6 pt-16 pb-32 flex flex-col min-h-screen">
+                    {/* SCROLLABLE CONTAINER */}
+                    <div className="flex-1 overflow-y-auto overscroll-contain p-8 pt-12 pb-40 no-scrollbar">
 
+                        {/* Header Area */}
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
                                 <div className="relative w-12 h-12">
@@ -86,13 +87,14 @@ export default function MobileNav() {
                             </button>
                         </div>
 
-                        <div className="space-y-2 flex-1">
+                        {/* Menu Items Grid */}
+                        <div className="space-y-2">
                             {menuItems.map((item) => (
                                 <Link
                                     key={item.path}
                                     href={item.path}
                                     onClick={() => setIsOpen(false)}
-                                    className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                    className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg translate-x-2' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                                 >
                                     {item.icon}
                                     <span>{item.name}</span>
@@ -100,8 +102,9 @@ export default function MobileNav() {
                             ))}
                         </div>
 
+                        {/* Logout Button */}
                         <div className="mt-8">
-                            <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2">
+                            <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-100 dark:border-red-900/30">
                                 <LogOut size={20} /> Log Out
                             </button>
                         </div>
