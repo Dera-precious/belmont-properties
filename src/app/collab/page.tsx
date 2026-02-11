@@ -5,11 +5,27 @@ import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
 import {
     ArrowLeft, MoreVertical, Send, Wallet, FileText,
-    CheckCircle, Users, Lock, AlertCircle, Loader2
+    CheckCircle, Users, Lock, AlertCircle, Loader2, HardDrive,
+    Folder, Image as ImageIcon, Download, Clock
 } from 'lucide-react';
 
 export default function CollabPage() {
     const { user } = useAuth();
+
+    // --- 1. NEW: PROJECT STATE ---
+    const [activeProject, setActiveProject] = useState('Lekki Phase 1 Villa');
+    const [activeTab, setActiveTab] = useState<'chat' | 'files'>('chat');
+
+    // --- 2. NEW: TASK STATE (INTERACTIVE) ---
+    const [tasks, setTasks] = useState([
+        { id: 1, label: "Approve Site Plan", due: "Today", completed: false },
+        { id: 2, label: "Sign Contractor Agreement", due: "Tomorrow", completed: false },
+        { id: 3, label: "Release Tranche 2 Payment", due: "In 3 days", completed: false }
+    ]);
+
+    const toggleTask = (id: number) => {
+        setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    };
 
     // CHAT STATE
     const [input, setInput] = useState('');
@@ -22,34 +38,27 @@ export default function CollabPage() {
         { id: 3, sender: 'Barr. Chidem', role: 'Legal', time: '10:20 AM', text: "I have reviewed the land titles. We are clear to proceed with payment." },
     ]);
 
-    // AUTO-SCROLL TO BOTTOM
+    // AUTO-SCROLL
     useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        if (activeTab === 'chat') {
+            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, activeTab]);
 
-    // HANDLE SEND
     const handleSend = () => {
         if (!input.trim()) return;
-
         const newMsg = {
-            id: Date.now(),
-            sender: 'You',
-            role: 'Owner',
+            id: Date.now(), sender: 'You', role: 'Owner',
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            text: input,
-            isMe: true
+            text: input, isMe: true
         };
-
         setMessages((prev) => [...prev, newMsg]);
         setInput('');
         setIsTyping(true);
 
-        // SIMULATE ARCHITECT REPLY (DEMO MAGIC)
         setTimeout(() => {
             const replyMsg = {
-                id: Date.now() + 1,
-                sender: 'Arc. Ifeanyi',
-                role: 'Architect',
+                id: Date.now() + 1, sender: 'Arc. Ifeanyi', role: 'Architect',
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 text: "Received. I'll update the bill of quantities and share the new estimate shortly.",
                 isMe: false
@@ -59,7 +68,7 @@ export default function CollabPage() {
         }, 2500);
     };
 
-    // TIER GATING
+    // TIER GATING (KEEPING THIS SECURE)
     const hasAccess = user?.tier === 'Premium' || user?.tier === 'Gold' || user?.tier === 'Diamond';
 
     if (!hasAccess) {
@@ -69,16 +78,20 @@ export default function CollabPage() {
                     <Lock size={40} className="text-gray-400" />
                 </div>
                 <h1 className="text-3xl font-serif font-bold text-[#0F172A] dark:text-white mb-2">War Room Locked</h1>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mb-8">
-                    Upgrade to <strong>Gold Tier</strong> to access live project management, architectural chats, and financial tracking.
+                <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+                    Project Management is reserved for <strong>Premium</strong> tiers and above.
                 </p>
+                <div className="bg-white dark:bg-[#1E293B] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-sm w-full mb-8 text-left">
+                    <h3 className="font-bold text-sm text-[#0F172A] dark:text-white mb-3 uppercase tracking-wider">Unlock These Features:</h3>
+                    <ul className="space-y-3">
+                        <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300"><CheckCircle size={16} className="text-green-500" /> Real-time Architect Chat</li>
+                        <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300"><CheckCircle size={16} className="text-green-500" /> File Sharing & Versioning</li>
+                        <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300"><HardDrive size={16} className="text-[#D4AF37]" /> <strong>50GB+ Cloud Storage</strong></li>
+                    </ul>
+                </div>
                 <div className="flex gap-4">
-                    <Link href="/" className="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        Back Home
-                    </Link>
-                    <Link href="/pricing" className="px-6 py-3 rounded-xl bg-[#D4AF37] text-[#0F172A] font-bold hover:bg-[#b5952f]">
-                        Upgrade Access
-                    </Link>
+                    <Link href="/" className="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 font-bold transition-colors">Back Home</Link>
+                    <Link href="/pricing" className="px-6 py-3 rounded-xl bg-[#D4AF37] text-[#0F172A] font-bold hover:bg-[#b5952f] transition-colors shadow-lg">Upgrade to Premium</Link>
                 </div>
             </div>
         );
@@ -90,100 +103,83 @@ export default function CollabPage() {
             {/* HEADER */}
             <header className="bg-white dark:bg-[#1E293B] border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex justify-between items-center sticky top-0 z-10 transition-colors">
                 <div className="flex items-center gap-4">
-                    <Link href="/">
-                        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={20} className="text-[#0F172A] dark:text-white" />
-                        </button>
-                    </Link>
+                    <Link href="/"><button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"><ArrowLeft size={20} className="text-[#0F172A] dark:text-white" /></button></Link>
                     <div>
                         <h1 className="text-xl font-serif font-bold text-[#0F172A] dark:text-white">BELMONT</h1>
                         <p className="text-xs text-gray-400 uppercase tracking-widest">COLLAB HUB</p>
                     </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                         <Avatar initials="JD" color="bg-[#0F172A] dark:bg-black border-white dark:border-[#1E293B]" />
                         <Avatar initials="AR" color="bg-[#D4AF37] border-white dark:border-[#1E293B]" />
                         <Avatar initials="SV" color="bg-blue-900 border-white dark:border-[#1E293B]" />
                     </div>
-                    <button className="px-4 py-2 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] text-sm rounded-lg hover:bg-[#D4AF37] transition-colors flex items-center gap-2 font-bold">
-                        <Users size={16} /> Invite
-                    </button>
+                    <button className="px-4 py-2 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] text-sm rounded-lg hover:bg-[#D4AF37] transition-colors flex items-center gap-2 font-bold"><Users size={16} /> Invite</button>
                 </div>
             </header>
 
             {/* MAIN LAYOUT */}
             <main className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)]">
 
-                {/* COLUMN 1: Projects */}
+                {/* COLUMN 1: Projects (Interactive Switcher) */}
                 <div className="hidden lg:block lg:col-span-3 space-y-4 overflow-y-auto">
                     <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Active Projects</h2>
-                    <ProjectCard title="Lekki Phase 1 Villa" status="Active" progress={65} milestone="Roofing" active />
-                    <ProjectCard title="Enugu Palm Estate" status="Pending" progress={10} milestone="Foundation" />
-                    <ProjectCard title="Abuja Central Office" status="On Hold" progress={45} milestone="Permits" />
+                    <div onClick={() => setActiveProject('Lekki Phase 1 Villa')}><ProjectCard title="Lekki Phase 1 Villa" status="Active" progress={65} milestone="Roofing" active={activeProject === 'Lekki Phase 1 Villa'} /></div>
+                    <div onClick={() => setActiveProject('Enugu Palm Estate')}><ProjectCard title="Enugu Palm Estate" status="Pending" progress={10} milestone="Foundation" active={activeProject === 'Enugu Palm Estate'} /></div>
+                    <div onClick={() => setActiveProject('Abuja Central Office')}><ProjectCard title="Abuja Central Office" status="On Hold" progress={45} milestone="Permits" active={activeProject === 'Abuja Central Office'} /></div>
                 </div>
 
-                {/* COLUMN 2: Chat Stream */}
+                {/* COLUMN 2: Chat & Files (Tabbed Interface) */}
                 <div className="col-span-1 lg:col-span-6 flex flex-col bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            <span className="font-medium text-[#0F172A] dark:text-white">Lekki Phase 1 Villa</span>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="font-medium text-[#0F172A] dark:text-white">{activeProject}</span>
+                            </div>
+                            {/* TABS */}
+                            <div className="flex bg-gray-200 dark:bg-gray-800 rounded-lg p-1">
+                                <button onClick={() => setActiveTab('chat')} className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'chat' ? 'bg-white dark:bg-[#1E293B] shadow text-[#0F172A] dark:text-white' : 'text-gray-500'}`}>Chat</button>
+                                <button onClick={() => setActiveTab('files')} className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'files' ? 'bg-white dark:bg-[#1E293B] shadow text-[#0F172A] dark:text-white' : 'text-gray-500'}`}>Files</button>
+                            </div>
                         </div>
                         <MoreVertical size={18} className="text-gray-400 cursor-pointer" />
                     </div>
 
-                    {/* Messages Area */}
+                    {/* CONTENT AREA */}
                     <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-[#FAFAF9] dark:bg-[#0F172A]">
-                        {messages.map((msg) => (
-                            <Message key={msg.id} {...msg} />
-                        ))}
-
-                        {/* Milestone Alert */}
-                        <div className="flex justify-center">
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 text-xs px-3 py-1 rounded-full flex items-center gap-2">
-                                <AlertCircle size={12} />
-                                <span>Milestone "Foundation" marked as complete by Site Engineer.</span>
-                            </div>
-                        </div>
-
-                        {/* Typing Indicator */}
-                        {isTyping && (
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                                <Loader2 size={12} className="animate-spin" /> Arc. Ifeanyi is typing...
+                        {activeTab === 'chat' ? (
+                            <>
+                                {messages.map((msg) => <Message key={msg.id} {...msg} />)}
+                                {isTyping && <div className="flex items-center gap-2 text-xs text-gray-400"><Loader2 size={12} className="animate-spin" /> Arc. Ifeanyi is typing...</div>}
+                                <div ref={scrollRef} />
+                            </>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                                <FileCard name="Ground_Floor_Plan.pdf" type="PDF" size="4.2 MB" date="Today" />
+                                <FileCard name="Electrical_Layout.dwg" type="CAD" size="12.5 MB" date="Yesterday" />
+                                <FileCard name="Site_Photos_Set_1.zip" type="ZIP" size="45 MB" date="Oct 24" />
+                                <FileCard name="Contract_v1_Signed.pdf" type="PDF" size="1.1 MB" date="Oct 20" />
                             </div>
                         )}
-                        <div ref={scrollRef} />
                     </div>
 
-                    {/* Input Area */}
-                    <div className="p-4 bg-white dark:bg-[#1E293B] border-t border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#0F172A] p-2 rounded-xl border border-gray-200 dark:border-gray-600 focus-within:border-[#D4AF37] focus-within:ring-1 focus-within:ring-[#D4AF37] transition-all">
-                            <input
-                                type="text"
-                                placeholder="Type a message..."
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                className="flex-1 bg-transparent border-none focus:ring-0 text-sm p-2 outline-none text-[#0F172A] dark:text-white"
-                            />
-                            <button
-                                onClick={handleSend}
-                                className="p-2 bg-[#0F172A] dark:bg-[#D4AF37] text-white dark:text-[#0F172A] rounded-lg hover:opacity-90 transition-colors"
-                            >
-                                <Send size={16} />
-                            </button>
+                    {/* Input Area (Only for Chat) */}
+                    {activeTab === 'chat' && (
+                        <div className="p-4 bg-white dark:bg-[#1E293B] border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#0F172A] p-2 rounded-xl border border-gray-200 dark:border-gray-600 focus-within:border-[#D4AF37] focus-within:ring-1 focus-within:ring-[#D4AF37] transition-all">
+                                <input type="text" placeholder="Type a message..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} className="flex-1 bg-transparent border-none focus:ring-0 text-sm p-2 outline-none text-[#0F172A] dark:text-white" />
+                                <button onClick={handleSend} className="p-2 bg-[#0F172A] dark:bg-[#D4AF37] text-white dark:text-[#0F172A] rounded-lg hover:opacity-90 transition-colors"><Send size={16} /></button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* COLUMN 3: Financials */}
+                {/* COLUMN 3: Financials & Interactive Tasks */}
                 <div className="hidden lg:block lg:col-span-3 space-y-6">
                     <div className="bg-[#0F172A] dark:bg-black text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group border border-transparent dark:border-gray-800">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Wallet size={80} />
-                        </div>
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Wallet size={80} /></div>
                         <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Total Budget</p>
                         <h3 className="text-3xl font-serif text-[#D4AF37] mb-4">₦150.5M</h3>
                         <div className="space-y-3">
@@ -197,9 +193,17 @@ export default function CollabPage() {
                     <div className="bg-white dark:bg-[#1E293B] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
                         <h3 className="font-serif text-[#0F172A] dark:text-white mb-4">Pending Approvals</h3>
                         <div className="space-y-3">
-                            <TaskItem label="Approve Site Plan" due="Today" />
-                            <TaskItem label="Sign Contractor Agreement" due="Tomorrow" />
-                            <TaskItem label="Release Tranche 2 Payment" due="In 3 days" />
+                            {tasks.map(task => (
+                                <div key={task.id} onClick={() => toggleTask(task.id)} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer group transition-colors ${task.completed ? 'opacity-50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                                    <div className={`transition-colors ${task.completed ? 'text-green-500' : 'text-gray-300 dark:text-gray-600 group-hover:text-[#D4AF37]'}`}>
+                                        <CheckCircle size={18} fill={task.completed ? "currentColor" : "none"} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className={`text-sm line-clamp-1 ${task.completed ? 'text-gray-400 line-through' : 'text-[#0F172A] dark:text-white'}`}>{task.label}</p>
+                                        <p className="text-[10px] text-gray-400">{task.due}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -250,11 +254,21 @@ function Message({ sender, role, time, text, isMe, attachment }: { sender: strin
     );
 }
 
-function TaskItem({ label, due }: { label: string, due: string }) {
+function FileCard({ name, type, size, date }: { name: string, type: string, size: string, date: string }) {
     return (
-        <div className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg cursor-pointer group transition-colors">
-            <div className="text-gray-300 dark:text-gray-600 group-hover:text-[#D4AF37] transition-colors"><CheckCircle size={18} /></div>
-            <div className="flex-1"><p className="text-sm text-[#0F172A] dark:text-white line-clamp-1">{label}</p><p className="text-[10px] text-gray-400">{due}</p></div>
+        <div className="p-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-3 hover:border-[#D4AF37] transition-colors cursor-pointer group">
+            <div className="p-2 bg-white dark:bg-[#1E293B] rounded-lg text-[#D4AF37] shadow-sm">
+                {type === 'ZIP' ? <Folder size={20} /> : type === 'PDF' ? <FileText size={20} /> : <ImageIcon size={20} />}
+            </div>
+            <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-bold text-[#0F172A] dark:text-white truncate">{name}</p>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                    <span>{size}</span><span>•</span><span>{date}</span>
+                </div>
+            </div>
+            <button className="text-gray-400 hover:text-[#0F172A] dark:hover:text-white transition-colors">
+                <Download size={16} />
+            </button>
         </div>
     );
 }

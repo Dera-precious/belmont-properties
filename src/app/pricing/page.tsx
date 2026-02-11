@@ -4,15 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 // IMPORT THE AUTH HOOK
 import { useAuth } from '../context/AuthContext';
-import { Check, ArrowLeft, Crown, Star, Shield, Zap, X } from 'lucide-react';
+import { Check, ArrowLeft, Crown, Star, Shield, Zap, X, HardDrive } from 'lucide-react';
 
 export default function PricingPage() {
     const { upgradeTier } = useAuth();
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
     const handleUpgrade = (tierName: string) => {
-        // VISUAL FEEDBACK
-        // alert(`Upgrading to ${tierName}...`); 
         // @ts-ignore
         upgradeTier(tierName);
     };
@@ -25,6 +23,7 @@ export default function PricingPage() {
             icon: <Star size={20} />,
             color: "bg-blue-500",
             features: [
+                { text: "4GB Cloud Storage", included: true, icon: <HardDrive size={14} /> },
                 { text: "Verified Badge", included: true },
                 { text: "View 50 Listings/day", included: true },
                 { text: "Legal Document Generator", included: true },
@@ -39,6 +38,7 @@ export default function PricingPage() {
             icon: <Shield size={20} />,
             color: "bg-purple-500",
             features: [
+                { text: "50GB Cloud Storage", included: true, icon: <HardDrive size={14} /> },
                 { text: "Premium Badge", included: true },
                 { text: "Unlimited Listings", included: true },
                 { text: "Legal Document Generator", included: true },
@@ -53,6 +53,7 @@ export default function PricingPage() {
             icon: <Crown size={20} />,
             color: "bg-[#D4AF37]",
             features: [
+                { text: "500GB Cloud Storage", included: true, icon: <HardDrive size={14} /> },
                 { text: "Gold Verification", included: true },
                 { text: "AI Architect Access", included: true },
                 { text: "Legal Document Generator", included: true },
@@ -68,9 +69,9 @@ export default function PricingPage() {
             color: "bg-black",
             highlight: true,
             features: [
+                { text: "Unlimited Storage", included: true, icon: <HardDrive size={14} /> },
                 { text: "Diamond Authority", included: true },
                 { text: "White-Glove Service", included: true },
-                { text: "Legal Document Generator", included: true },
                 { text: "Direct CEO Access", included: true },
                 { text: "Surveyor & Architect Access", included: true },
                 { text: "Algorithm Support", included: true }
@@ -86,7 +87,7 @@ export default function PricingPage() {
 
             <div className="text-center max-w-2xl mx-auto mb-12">
                 <h1 className="text-4xl font-serif font-bold mb-4 text-[#0F172A] dark:text-[#D4AF37]">Choose Your Tier</h1>
-                <p className="text-gray-500 dark:text-gray-400">Unlock tools for Clients, Lawyers, Surveyors, and Architects.</p>
+                <p className="text-gray-500 dark:text-gray-400">Unlock storage, tools, and exclusive access.</p>
 
                 <div className="flex items-center justify-center mt-8 gap-4">
                     <span className={`text-sm font-bold ${billingCycle === 'monthly' ? 'text-[#0F172A] dark:text-white' : 'text-gray-400'}`}>Monthly</span>
@@ -118,8 +119,8 @@ export default function PricingPage() {
                         <ul className="space-y-3 mb-8 flex-1">
                             {plan.features.map((feat, i) => (
                                 <li key={i} className={`flex items-center gap-2 text-sm ${feat.included ? 'text-gray-600 dark:text-gray-300' : 'text-gray-300 dark:text-gray-700 line-through'}`}>
-                                    {feat.included ? <Check size={14} className="text-green-500 shrink-0" /> : <X size={14} className="shrink-0" />}
-                                    {feat.text}
+                                    {feat.included ? (feat.icon || <Check size={14} className="text-green-500 shrink-0" />) : <X size={14} className="shrink-0" />}
+                                    <span className={feat.text.includes('Storage') ? 'font-bold text-[#0F172A] dark:text-white' : ''}>{feat.text}</span>
                                 </li>
                             ))}
                         </ul>
