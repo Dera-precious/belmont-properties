@@ -9,7 +9,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import {
     LayoutDashboard, Search, Users, BookOpen, Scale,
     Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock,
-    ShoppingBag, Wallet // ADDED: Wallet Icon
+    ShoppingBag, Wallet
 } from 'lucide-react';
 
 export default function MobileNav() {
@@ -22,7 +22,7 @@ export default function MobileNav() {
 
     const menuItems = [
         { name: 'Central Hub', icon: <LayoutDashboard size={20} />, path: '/' },
-        { name: 'Wallet', icon: <Wallet size={20} />, path: '/wallet' }, // NEW
+        { name: 'Wallet', icon: <Wallet size={20} />, path: '/wallet' },
         { name: 'Listings', icon: <Search size={20} />, path: '/listings' },
         { name: 'Collab', icon: <Users size={20} />, path: '/collab' },
         { name: 'Mentorship', icon: <BookOpen size={20} />, path: '/mentorship' },
@@ -38,7 +38,7 @@ export default function MobileNav() {
 
     return (
         <>
-            {/* 1. BOTTOM BAR (Always Visible) */}
+            {/* 1. BOTTOM BAR (Fixed & Always Visible) */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 p-4 flex justify-around items-center z-50 transition-colors duration-500 safe-area-bottom">
                 <Link href="/" className={`p-2 rounded-xl ${pathname === '/' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
                     <LayoutDashboard size={24} />
@@ -59,50 +59,53 @@ export default function MobileNav() {
                 </Link>
             </div>
 
-            {/* 2. FULL SCREEN MENU OVERLAY */}
+            {/* 2. FULL SCREEN MENU OVERLAY (Scrollable) */}
             {isOpen && (
-                <div className="md:hidden fixed inset-0 bg-[#FAFAF9] dark:bg-[#0F172A] z-40 flex flex-col p-8 pt-24 animate-in slide-in-from-bottom-10 duration-300">
+                <div className="md:hidden fixed inset-0 bg-[#FAFAF9] dark:bg-[#0F172A] z-40 flex flex-col overflow-y-auto animate-in slide-in-from-bottom-10 duration-300">
 
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12">
-                                <Image
-                                    src="/belmont-logo-gold.png"
-                                    alt="Belmont"
-                                    fill
-                                    className="object-contain"
-                                />
+                    {/* Inner Container for Padding & Spacing */}
+                    <div className="p-6 pt-16 pb-32 flex flex-col min-h-screen">
+
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="relative w-12 h-12">
+                                    <Image
+                                        src="/belmont-logo-gold.png"
+                                        alt="Belmont"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-serif font-bold text-[#0F172A] dark:text-white">BELMONT</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Properties</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-xl font-serif font-bold text-[#0F172A] dark:text-white">BELMONT</h2>
-                                <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Properties</p>
-                            </div>
+                            <button onClick={toggleTheme} className="p-3 bg-white dark:bg-[#1E293B] rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                                {theme === 'dark' ? <Moon size={20} className="text-[#D4AF37]" /> : <Sun size={20} className="text-orange-500" />}
+                            </button>
                         </div>
-                        <button onClick={toggleTheme} className="p-3 bg-white dark:bg-[#1E293B] rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
-                            {theme === 'dark' ? <Moon size={20} className="text-[#D4AF37]" /> : <Sun size={20} className="text-orange-500" />}
-                        </button>
-                    </div>
 
-                    <div className="space-y-2">
-                        {menuItems.map((item) => (
-                            <Link
-                                key={item.path}
-                                href={item.path}
-                                onClick={() => setIsOpen(false)}
-                                className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                            >
-                                {item.icon}
-                                <span>{item.name}</span>
-                            </Link>
-                        ))}
-                    </div>
+                        <div className="space-y-2 flex-1">
+                            {menuItems.map((item) => (
+                                <Link
+                                    key={item.path}
+                                    href={item.path}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                >
+                                    {item.icon}
+                                    <span>{item.name}</span>
+                                </Link>
+                            ))}
+                        </div>
 
-                    <div className="mt-auto pb-24">
-                        <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2">
-                            <LogOut size={20} /> Log Out
-                        </button>
+                        <div className="mt-8">
+                            <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2">
+                                <LogOut size={20} /> Log Out
+                            </button>
+                        </div>
                     </div>
-
                 </div>
             )}
         </>
