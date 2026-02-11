@@ -1,183 +1,213 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
 import Link from 'next/link';
-// NEW: Import the Booking Modal
-import BookingModal from '@/components/BookingModal';
+import { useParams, useRouter } from 'next/navigation'; // 1. Hook to read the URL ID
+import { useAuth } from '@/app/context/AuthContext';
 import {
-    MapPin, BedDouble, Bath, Square, ArrowLeft, Heart,
-    Share2, Shield, TrendingUp, Lock, Phone, MessageSquare,
-    BrainCircuit, Plane, ArrowRight
+    ArrowLeft, MapPin, BedDouble, Bath, Square,
+    Heart, Share2, CheckCircle2, Shield, Calendar, CreditCard
 } from 'lucide-react';
 
-export default function ListingDetail() {
-    const { user, toggleSave } = useAuth();
-
-    // NEW: State for the booking modal
-    const [bookingType, setBookingType] = useState<'physical' | 'police' | 'drone' | null>(null);
-
-    const property = {
+// 2. SAME DATA (Ideally this should be in a shared file, but we keep it here for safety)
+const listingsData = [
+    {
         id: 1,
         title: "The Ivory Penthouse",
         location: "Ikoyi, Lagos",
         price: "₦850,000,000",
-        description: "A masterpiece of modern architecture located in the heart of Ikoyi's most exclusive zone. Features floor-to-ceiling reinforced glass, a private elevator, and a rooftop infinity pool.",
-        beds: 4, baths: 5, area: "650 sqm",
-        images: ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop"],
-        investment: { roi: "12% Annual", rentalValue: "₦45M / year" },
-        aiRating: { score: 9.2, structure: "Grade A Concrete", verdict: "Prime Investment" },
-        owner: { name: "Chief T. Benson", phone: "+234 809 999 9999" }
-    };
+        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop",
+        beds: 4, baths: 5, area: "650 sqm", tag: "Exclusive",
+        description: "A masterpiece of modern architecture located in the heart of Ikoyi's most exclusive zone. Features floor-to-ceiling reinforced glass, a private elevator, and a rooftop infinity pool overlooking the city skyline."
+    },
+    {
+        id: 2,
+        title: "Enugu Heights Estate",
+        location: "Independence Layout, Enugu",
+        price: "₦120,000,000",
+        image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2670&auto=format&fit=crop",
+        beds: 5, baths: 6, area: "800 sqm", tag: "New Listing",
+        description: "Experience serene luxury in the rolling hills of Enugu. This expansive estate features smart-home integration, a private cinema, and lush gardens perfect for family living."
+    },
+    {
+        id: 3,
+        title: "Minimalist Haven",
+        location: "Maitama, Abuja",
+        price: "₦450,000,000",
+        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2653&auto=format&fit=crop",
+        beds: 3, baths: 3, area: "400 sqm", tag: "Modern",
+        description: "Clean lines and open spaces define this architectural gem in Maitama. Designed for the modern executive, it offers high-security access and premium finishing throughout."
+    },
+    {
+        id: 4,
+        title: "The Glass Villa",
+        location: "Lekki Phase 1, Lagos",
+        price: "₦650,000,000",
+        image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2684&auto=format&fit=crop",
+        beds: 6, baths: 7, area: "900 sqm", tag: "Luxury",
+        description: "An iconic glass structure in Lekki Phase 1. This property blurs the lines between indoor and outdoor living with its transparency and light. Includes a boat jetty."
+    },
+    {
+        id: 5,
+        title: "Victoria Island Loft",
+        location: "Victoria Island, Lagos",
+        price: "₦300,000,000",
+        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2670&auto=format&fit=crop",
+        beds: 2, baths: 2, area: "250 sqm", tag: "City View",
+        description: "Urban chic meets luxury. This double-volume loft in VI is perfect for the expatriate or business leader. Walking distance to major corporate HQs."
+    },
+    {
+        id: 6,
+        title: "Asokoro Mansion",
+        location: "Asokoro, Abuja",
+        price: "₦1,200,000,000",
+        image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2671&auto=format&fit=crop",
+        beds: 8, baths: 10, area: "1500 sqm", tag: "Premium",
+        description: "The definition of opulence. This diplomat-standard mansion in Asokoro features bulletproof glazing, a grand ballroom, and staff quarters for six."
+    }
+];
 
-    const isGold = user?.tier === 'Gold' || user?.tier === 'Diamond' || user?.tier === 'Premium';
-    const isDiamond = user?.tier === 'Diamond';
-    const isSaved = user?.savedIds?.includes(property.id);
+export default function ListingDetailsPage() {
+    const params = useParams(); // Get the ID from the URL (e.g., "2")
+    const router = useRouter();
+    const { user, toggleSave } = useAuth();
+
+    // 3. FIND THE MATCHING LISTING
+    // We convert params.id to a Number to match our data
+    const listing = listingsData.find(item => item.id === Number(params.id));
+
+    // Safety check: If someone types /listings/999 (invalid ID)
+    if (!listing) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white">
+                <h2 className="text-2xl font-bold mb-4">Property Not Found</h2>
+                <Link href="/listings">
+                    <button className="px-6 py-3 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] rounded-xl font-bold">Back to Listings</button>
+                </Link>
+            </div>
+        );
+    }
+
+    const isSaved = user?.savedIds?.includes(listing.id);
 
     return (
-        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans pb-24 transition-colors duration-500">
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
 
-            {/* BOOKING MODAL */}
-            <BookingModal
-                isOpen={!!bookingType}
-                onClose={() => setBookingType(null)}
-                type={bookingType || 'physical'}
-                price={bookingType === 'police' ? 15000 : bookingType === 'drone' ? 25000 : 0}
-                propertyTitle={property.title}
-            />
+            {/* HERO IMAGE */}
+            <div className="relative h-[50vh] md:h-[60vh] w-full">
+                <img src={listing.image} alt={listing.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
 
-            {/* IMAGE */}
-            <div className="relative h-[50vh] md:h-[60vh] bg-gray-200">
-                <img src={property.images[0]} className="w-full h-full object-cover" alt="Main View" />
-                <div className="absolute top-6 left-6 z-10">
-                    <Link href="/listings"><button className="p-3 bg-white/20 backdrop-blur-md text-white rounded-full"><ArrowLeft size={24} /></button></Link>
-                </div>
-                <div className="absolute bottom-6 right-6 flex gap-2">
-                    <button className="px-4 py-2 bg-white/90 text-[#0F172A] text-sm font-bold rounded-lg flex items-center gap-2"><Share2 size={16} /> Share</button>
-                    <button onClick={() => toggleSave(property.id)} className={`px-4 py-2 text-sm font-bold rounded-lg flex items-center gap-2 ${isSaved ? 'bg-red-500 text-white' : 'bg-white/90 text-red-500'}`}>
-                        <Heart size={16} fill={isSaved ? "currentColor" : "none"} /> Save
+                {/* Back Button */}
+                <button onClick={() => router.back()} className="absolute top-6 left-6 p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all">
+                    <ArrowLeft size={24} />
+                </button>
+
+                {/* Actions */}
+                <div className="absolute top-6 right-6 flex gap-3">
+                    <button className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all">
+                        <Share2 size={20} />
                     </button>
+                    <button
+                        onClick={() => toggleSave(listing.id)}
+                        className={`p-3 backdrop-blur-md rounded-full transition-all ${isSaved ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white hover:text-red-500'}`}
+                    >
+                        <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
+                    </button>
+                </div>
+
+                {/* Title Overlay */}
+                <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white">
+                    <div className="max-w-6xl mx-auto">
+                        <span className="bg-[#D4AF37] text-[#0F172A] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
+                            {listing.tag}
+                        </span>
+                        <h1 className="text-3xl md:text-5xl font-serif font-bold mb-2">{listing.title}</h1>
+                        <div className="flex items-center gap-2 text-gray-300">
+                            <MapPin size={18} className="text-[#D4AF37]" />
+                            <span className="text-lg">{listing.location}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* CONTENT */}
-            <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-[#1E293B] p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="max-w-6xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-                        {/* --- FIXED OVERFLOW SECTION --- */}
-                        <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-2">
-                            <div>
-                                <h1 className="text-2xl md:text-3xl font-serif font-bold mb-2 break-words">{property.title}</h1>
-                                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><MapPin size={18} /> {property.location}</div>
-                            </div>
-                            <div className="text-left md:text-right w-full md:w-auto">
-                                <p className="text-2xl md:text-3xl font-serif font-bold text-[#D4AF37] break-words">{property.price}</p>
+                {/* LEFT: Details */}
+                <div className="lg:col-span-2 space-y-8">
+
+                    {/* Key Stats */}
+                    <div className="flex justify-between p-6 bg-white dark:bg-[#1E293B] rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div className="text-center">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Price</p>
+                            <p className="text-xl md:text-2xl font-serif font-bold text-[#D4AF37]">{listing.price}</p>
+                        </div>
+                        <div className="w-px bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="text-center">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Layout</p>
+                            <div className="flex items-center gap-2 font-bold text-[#0F172A] dark:text-white">
+                                <BedDouble size={18} /> {listing.beds} <span className="text-gray-400 font-normal">|</span> <Bath size={18} /> {listing.baths}
                             </div>
                         </div>
-                        {/* ------------------------------- */}
-
-                        <div className="flex gap-6 py-6 border-y border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-2"><BedDouble size={20} className="text-gray-400" /><span className="font-bold">{property.beds} Beds</span></div>
-                            <div className="flex items-center gap-2"><Bath size={20} className="text-gray-400" /><span className="font-bold">{property.baths} Baths</span></div>
-                            <div className="flex items-center gap-2"><Square size={20} className="text-gray-400" /><span className="font-bold">{property.area}</span></div>
+                        <div className="w-px bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="text-center">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Size</p>
+                            <div className="flex items-center gap-2 font-bold text-[#0F172A] dark:text-white">
+                                <Square size={18} /> {listing.area}
+                            </div>
                         </div>
-                        <div className="pt-6"><h3 className="font-bold mb-3">Description</h3><p className="text-gray-600 dark:text-gray-300 leading-relaxed">{property.description}</p></div>
                     </div>
 
-                    {/* AI SCAN */}
-                    <div className="bg-[#0F172A] text-white p-8 rounded-3xl relative overflow-hidden">
-                        <div className="flex items-center gap-3 mb-6 relative z-10">
-                            <div className="p-2 bg-[#D4AF37] rounded-lg text-[#0F172A]"><BrainCircuit size={24} /></div>
-                            <div><h3 className="font-bold text-lg">AI Architectural Scan</h3><p className="text-xs text-gray-400">Powered by Belmont Neural Engine</p></div>
+                    {/* Description */}
+                    <div>
+                        <h3 className="text-xl font-bold text-[#0F172A] dark:text-white mb-4">About this property</h3>
+                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
+                            {listing.description}
+                        </p>
+                    </div>
+
+                    {/* Features Grid */}
+                    <div>
+                        <h3 className="text-xl font-bold text-[#0F172A] dark:text-white mb-4">Amenities</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {['24/7 Power', 'Swimming Pool', 'Security', 'Gym', 'Smart Home', 'Parking'].map((feature) => (
+                                <div key={feature} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    <CheckCircle2 size={18} className="text-[#D4AF37]" />
+                                    <span className="text-sm font-medium text-[#0F172A] dark:text-white">{feature}</span>
+                                </div>
+                            ))}
                         </div>
-                        {isGold ? (
-                            <div className="grid grid-cols-2 gap-4 relative z-10">
-                                <div className="bg-white/10 p-4 rounded-xl"><p className="text-xs text-gray-400 uppercase">Score</p><p className="text-2xl font-bold text-[#D4AF37]">{property.aiRating.score}/10</p></div>
-                                <div className="col-span-2 bg-white/10 p-4 rounded-xl"><p className="font-serif italic text-lg">"{property.aiRating.verdict}"</p></div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-8 relative z-10"><Lock size={32} className="mx-auto mb-3 text-gray-500" /><h4 className="font-bold mb-2">Analysis Locked</h4><Link href="/pricing"><button className="px-6 py-2 bg-[#D4AF37] text-[#0F172A] font-bold rounded-lg text-sm">Unlock AI Report</button></Link></div>
-                        )}
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN - Updated with Safety Features */}
-                <div className="space-y-6">
-                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-2 mb-4"><TrendingUp size={20} className="text-green-500" /><h3 className="font-bold">Investment Data</h3></div>
-                        {isGold ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between border-b pb-3"><span className="text-sm text-gray-500">Proj. ROI</span><span className="font-bold text-green-500">{property.investment.roi}</span></div>
-                                <div className="flex justify-between"><span className="text-sm text-gray-500">Rental Value</span><span className="font-bold">{property.investment.rentalValue}</span></div>
-                            </div>
-                        ) : (
-                            <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-xl text-center border border-dashed"><p className="text-xs text-gray-500 mb-3">ROI & Rental data hidden</p><Link href="/pricing"><button className="text-xs font-bold text-[#D4AF37]">Upgrade to View</button></Link></div>
-                        )}
-                    </div>
+                {/* RIGHT: Action Card */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white dark:bg-[#1E293B] p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl sticky top-24">
+                        <h3 className="text-lg font-bold text-[#0F172A] dark:text-white mb-6">Interested?</h3>
 
-                    {/* INSPECTION CARD - CONNECTED */}
-                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl relative overflow-hidden">
-                        {/* Badge */}
-                        <div className="absolute top-0 right-0 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-bl-xl border-l border-b border-blue-100 dark:border-blue-800">
-                            <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                <Shield size={10} /> Safe Inspect™ Ready
-                            </div>
-                        </div>
+                        <div className="space-y-4">
+                            <Link href="/services">
+                                <button className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mb-3">
+                                    <Shield size={18} /> Book Inspection
+                                </button>
+                            </Link>
 
-                        <h3 className="font-bold mb-4">Book Inspection</h3>
-
-                        <div className="space-y-3 mb-6">
-                            {/* Option 1: Physical */}
-                            <button
-                                onClick={() => setBookingType('physical')}
-                                className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between hover:border-[#D4AF37] transition-colors group text-left"
-                            >
-                                <div><p className="font-bold text-sm">Physical Visit</p><p className="text-xs text-gray-500">Go yourself</p></div>
-                                <span className="text-xs font-bold text-gray-400 group-hover:text-[#D4AF37]">Free</span>
+                            <button className="w-full py-4 border border-gray-200 dark:border-gray-700 text-[#0F172A] dark:text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <Calendar size={18} /> Schedule Tour
                             </button>
 
-                            {/* Option 2: Safe Inspect */}
-                            <button
-                                onClick={() => setBookingType('police')}
-                                className="w-full p-3 rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/10 flex items-center justify-between hover:border-blue-500 transition-colors text-left"
-                            >
-                                <div>
-                                    <p className="font-bold text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2"><Shield size={12} /> With MOPOL Escort</p>
-                                    <p className="text-xs text-gray-500">Armed security detail</p>
-                                </div>
-                                <span className="text-xs font-bold text-blue-600">+₦15k</span>
-                            </button>
-
-                            {/* Option 3: Drone */}
-                            <button
-                                onClick={() => setBookingType('drone')}
-                                className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between hover:border-[#D4AF37] transition-colors group text-left"
-                            >
-                                <div>
-                                    <p className="font-bold text-sm flex items-center gap-2"><Plane size={12} /> Send Drone</p>
-                                    <p className="text-xs text-gray-500">Receive 4K video report</p>
-                                </div>
-                                <span className="text-xs font-bold text-[#D4AF37]">+₦25k</span>
+                            <button className="w-full py-4 border border-gray-200 dark:border-gray-700 text-[#0F172A] dark:text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <CreditCard size={18} /> Make Offer
                             </button>
                         </div>
 
-                        <button
-                            onClick={() => setBookingType('physical')}
-                            className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                        >
-                            Proceed to Booking <ArrowRight size={16} />
-                        </button>
-                    </div>
-
-                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl">
-                        {isDiamond ? (
-                            <div className="pt-2"><p className="text-xs font-bold text-[#D4AF37] mb-3 flex items-center gap-2"><Shield size={12} /> Diamond Access</p><div className="p-4 bg-[#D4AF37]/10 rounded-xl"><p className="text-sm font-bold mb-1">{property.owner.name}</p><p className="text-lg font-serif mb-3">{property.owner.phone}</p><button className="w-full py-2 bg-[#D4AF37] text-[#0F172A] font-bold rounded-lg text-sm flex items-center justify-center gap-2"><Phone size={16} /> Call Owner</button></div></div>
-                        ) : (
-                            <div className="pt-2"><Link href="/pricing"><button className="w-full py-2 border border-gray-200 dark:border-gray-700 text-gray-400 font-bold rounded-xl text-sm">Diamond Exclusive: Call Owner</button></Link></div>
-                        )}
+                        <p className="text-xs text-center text-gray-400 mt-6">
+                            Verified by Belmont Trust Center. <br /> Transaction protected by Escrow.
+                        </p>
                     </div>
                 </div>
+
             </div>
         </div>
     );
