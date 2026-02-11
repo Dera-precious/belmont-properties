@@ -2,14 +2,17 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation'; // 1. Hook to read the URL ID
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+// IMPORT THE BOOKING MODAL
+import BookingModal from '@/components/BookingModal';
 import {
     ArrowLeft, MapPin, BedDouble, Bath, Square,
-    Heart, Share2, CheckCircle2, Shield, Calendar, CreditCard
+    Heart, Share2, CheckCircle2, Shield, Calendar, CreditCard,
+    TrendingUp, Lock, BrainCircuit, Plane, Phone, ArrowRight
 } from 'lucide-react';
 
-// 2. SAME DATA (Ideally this should be in a shared file, but we keep it here for safety)
+// --- DATA SOURCE ---
 const listingsData = [
     {
         id: 1,
@@ -68,30 +71,41 @@ const listingsData = [
 ];
 
 export default function ListingDetailsPage() {
-    const params = useParams(); // Get the ID from the URL (e.g., "2")
+    const params = useParams();
     const router = useRouter();
     const { user, toggleSave } = useAuth();
 
-    // 3. FIND THE MATCHING LISTING
-    // We convert params.id to a Number to match our data
-    const listing = listingsData.find(item => item.id === Number(params.id));
+    // STATE FOR BOOKING MODAL
+    const [bookingType, setBookingType] = useState<'physical' | 'police' | 'drone' | 'legal' | 'surveyor' | 'architect' | null>(null);
 
-    // Safety check: If someone types /listings/999 (invalid ID)
-    if (!listing) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white">
-                <h2 className="text-2xl font-bold mb-4">Property Not Found</h2>
-                <Link href="/listings">
-                    <button className="px-6 py-3 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] rounded-xl font-bold">Back to Listings</button>
-                </Link>
-            </div>
-        );
-    }
+    // 1. FIND LISTING
+    const baseListing = listingsData.find(item => item.id === Number(params.id));
+
+    // 2. AUGMENT LISTING WITH FAKE "AI DATA" (Since our basic list doesn't have it)
+    const listing = baseListing ? {
+        ...baseListing,
+        aiRating: { score: 9.2, structure: "Grade A Concrete", verdict: "Prime Investment" },
+        investment: { roi: "12% Annual", rentalValue: "₦45M / year" },
+        owner: { name: "Chief T. Benson", phone: "+234 809 999 9999" }
+    } : null;
+
+    if (!listing) return <div className="p-20 text-center">Property not found.</div>;
 
     const isSaved = user?.savedIds?.includes(listing.id);
+    const isGold = user?.tier === 'Gold' || user?.tier === 'Diamond' || user?.tier === 'Premium';
+    const isDiamond = user?.tier === 'Diamond';
 
     return (
-        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32 text-[#0F172A] dark:text-white">
+
+            {/* BOOKING MODAL (Connects to Trust Center logic) */}
+            <BookingModal
+                isOpen={!!bookingType}
+                onClose={() => setBookingType(null)}
+                type={bookingType || 'physical'}
+                price={bookingType === 'police' ? 15000 : bookingType === 'drone' ? 25000 : 0}
+                propertyTitle={listing.title}
+            />
 
             {/* HERO IMAGE */}
             <div className="relative h-[50vh] md:h-[60vh] w-full">
@@ -122,28 +136,28 @@ export default function ListingDetailsPage() {
                         <span className="bg-[#D4AF37] text-[#0F172A] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
                             {listing.tag}
                         </span>
-                        <h1 className="text-3xl md:text-5xl font-serif font-bold mb-2">{listing.title}</h1>
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <MapPin size={18} className="text-[#D4AF37]" />
-                            <span className="text-lg">{listing.location}</span>
+                        <div className="flex flex-col md:flex-row justify-between items-end gap-4">
+                            <div>
+                                <h1 className="text-3xl md:text-5xl font-serif font-bold mb-2">{listing.title}</h1>
+                                <div className="flex items-center gap-2 text-gray-300">
+                                    <MapPin size={18} className="text-[#D4AF37]" />
+                                    <span className="text-lg">{listing.location}</span>
+                                </div>
+                            </div>
+                            <p className="text-3xl md:text-4xl font-serif font-bold text-[#D4AF37]">{listing.price}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* CONTENT */}
+            {/* CONTENT GRID */}
             <div className="max-w-6xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-                {/* LEFT: Details */}
+                {/* LEFT: Details & AI */}
                 <div className="lg:col-span-2 space-y-8">
 
                     {/* Key Stats */}
                     <div className="flex justify-between p-6 bg-white dark:bg-[#1E293B] rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <div className="text-center">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Price</p>
-                            <p className="text-xl md:text-2xl font-serif font-bold text-[#D4AF37]">{listing.price}</p>
-                        </div>
-                        <div className="w-px bg-gray-200 dark:bg-gray-700"></div>
                         <div className="text-center">
                             <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Layout</p>
                             <div className="flex items-center gap-2 font-bold text-[#0F172A] dark:text-white">
@@ -157,55 +171,126 @@ export default function ListingDetailsPage() {
                                 <Square size={18} /> {listing.area}
                             </div>
                         </div>
+                        <div className="w-px bg-gray-200 dark:bg-gray-700"></div>
+                        <div className="text-center">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Rating</p>
+                            <div className="flex items-center gap-2 font-bold text-[#D4AF37]">
+                                <BrainCircuit size={18} /> {listing.aiRating.score}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* AI SCAN SECTION (Gated) */}
+                    <div className="bg-[#0F172A] text-white p-8 rounded-3xl relative overflow-hidden">
+                        <div className="flex items-center gap-3 mb-6 relative z-10">
+                            <div className="p-2 bg-[#D4AF37] rounded-lg text-[#0F172A]"><BrainCircuit size={24} /></div>
+                            <div><h3 className="font-bold text-lg">AI Architectural Scan</h3><p className="text-xs text-gray-400">Powered by Belmont Neural Engine</p></div>
+                        </div>
+                        {isGold ? (
+                            <div className="grid grid-cols-2 gap-4 relative z-10">
+                                <div className="bg-white/10 p-4 rounded-xl"><p className="text-xs text-gray-400 uppercase">Score</p><p className="text-2xl font-bold text-[#D4AF37]">{listing.aiRating.score}/10</p></div>
+                                <div className="col-span-2 bg-white/10 p-4 rounded-xl"><p className="font-serif italic text-lg">"{listing.aiRating.verdict}"</p></div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 relative z-10"><Lock size={32} className="mx-auto mb-3 text-gray-500" /><h4 className="font-bold mb-2">Analysis Locked</h4><Link href="/pricing"><button className="px-6 py-2 bg-[#D4AF37] text-[#0F172A] font-bold rounded-lg text-sm">Unlock AI Report</button></Link></div>
+                        )}
                     </div>
 
                     {/* Description */}
                     <div>
-                        <h3 className="text-xl font-bold text-[#0F172A] dark:text-white mb-4">About this property</h3>
+                        <h3 className="text-xl font-bold mb-4">About this property</h3>
                         <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
                             {listing.description}
                         </p>
                     </div>
 
-                    {/* Features Grid */}
-                    <div>
-                        <h3 className="text-xl font-bold text-[#0F172A] dark:text-white mb-4">Amenities</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            {['24/7 Power', 'Swimming Pool', 'Security', 'Gym', 'Smart Home', 'Parking'].map((feature) => (
-                                <div key={feature} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-800">
-                                    <CheckCircle2 size={18} className="text-[#D4AF37]" />
-                                    <span className="text-sm font-medium text-[#0F172A] dark:text-white">{feature}</span>
-                                </div>
-                            ))}
-                        </div>
+                    {/* Investment Data */}
+                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4"><TrendingUp size={20} className="text-green-500" /><h3 className="font-bold">Investment Data</h3></div>
+                        {isGold ? (
+                            <div className="space-y-4">
+                                <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-3"><span className="text-sm text-gray-500">Proj. ROI</span><span className="font-bold text-green-500">{listing.investment.roi}</span></div>
+                                <div className="flex justify-between"><span className="text-sm text-gray-500">Rental Value</span><span className="font-bold">{listing.investment.rentalValue}</span></div>
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-xl text-center border border-dashed border-gray-200 dark:border-gray-700"><p className="text-xs text-gray-500 mb-3">ROI & Rental data hidden</p><Link href="/pricing"><button className="text-xs font-bold text-[#D4AF37]">Upgrade to View</button></Link></div>
+                        )}
                     </div>
                 </div>
 
                 {/* RIGHT: Action Card */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white dark:bg-[#1E293B] p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl sticky top-24">
-                        <h3 className="text-lg font-bold text-[#0F172A] dark:text-white mb-6">Interested?</h3>
+                <div className="lg:col-span-1 space-y-6">
 
-                        <div className="space-y-4">
-                            <Link href="/services">
-                                <button className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mb-3">
-                                    <Shield size={18} /> Book Inspection
-                                </button>
-                            </Link>
+                    {/* BOOKING CARD */}
+                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-bl-xl border-l border-b border-blue-100 dark:border-blue-800">
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                <Shield size={10} /> Safe Inspect™
+                            </div>
+                        </div>
 
-                            <button className="w-full py-4 border border-gray-200 dark:border-gray-700 text-[#0F172A] dark:text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                <Calendar size={18} /> Schedule Tour
+                        <h3 className="font-bold mb-4 text-lg">Book Inspection</h3>
+
+                        <div className="space-y-3 mb-6">
+                            {/* Option 1: Physical */}
+                            <button
+                                onClick={() => setBookingType('physical')}
+                                className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between hover:border-[#D4AF37] transition-colors group text-left"
+                            >
+                                <div><p className="font-bold text-sm">Physical Visit</p><p className="text-xs text-gray-500">Go yourself</p></div>
+                                <span className="text-xs font-bold text-gray-400 group-hover:text-[#D4AF37]">Free</span>
                             </button>
 
-                            <button className="w-full py-4 border border-gray-200 dark:border-gray-700 text-[#0F172A] dark:text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                <CreditCard size={18} /> Make Offer
+                            {/* Option 2: Safe Inspect */}
+                            <button
+                                onClick={() => setBookingType('police')}
+                                className="w-full p-3 rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/10 flex items-center justify-between hover:border-blue-500 transition-colors text-left"
+                            >
+                                <div>
+                                    <p className="font-bold text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2"><Shield size={12} /> With MOPOL Escort</p>
+                                    <p className="text-xs text-gray-500">Armed security detail</p>
+                                </div>
+                                <span className="text-xs font-bold text-blue-600">+₦15k</span>
+                            </button>
+
+                            {/* Option 3: Drone */}
+                            <button
+                                onClick={() => setBookingType('drone')}
+                                className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-between hover:border-[#D4AF37] transition-colors group text-left"
+                            >
+                                <div>
+                                    <p className="font-bold text-sm flex items-center gap-2"><Plane size={12} /> Send Drone</p>
+                                    <p className="text-xs text-gray-500">Receive 4K video report</p>
+                                </div>
+                                <span className="text-xs font-bold text-[#D4AF37]">+₦25k</span>
                             </button>
                         </div>
 
-                        <p className="text-xs text-center text-gray-400 mt-6">
-                            Verified by Belmont Trust Center. <br /> Transaction protected by Escrow.
-                        </p>
+                        <button onClick={() => setBookingType('physical')} className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                            Proceed to Booking <ArrowRight size={16} />
+                        </button>
                     </div>
+
+                    {/* OWNER CARD */}
+                    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl">
+                        {isDiamond ? (
+                            <div className="pt-2">
+                                <p className="text-xs font-bold text-[#D4AF37] mb-3 flex items-center gap-2"><Shield size={12} /> Diamond Access</p>
+                                <div className="p-4 bg-[#D4AF37]/10 rounded-xl">
+                                    <p className="text-sm font-bold mb-1">{listing.owner.name}</p>
+                                    <p className="text-lg font-serif mb-3">{listing.owner.phone}</p>
+                                    <button className="w-full py-2 bg-[#D4AF37] text-[#0F172A] font-bold rounded-lg text-sm flex items-center justify-center gap-2"><Phone size={16} /> Call Owner</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="pt-2 text-center">
+                                <Lock size={24} className="mx-auto text-gray-400 mb-2" />
+                                <p className="text-xs text-gray-500 mb-4">Owner contact is restricted.</p>
+                                <Link href="/pricing"><button className="w-full py-2 border border-gray-200 dark:border-gray-700 text-gray-400 font-bold rounded-xl text-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors">Diamond Exclusive: Call Owner</button></Link>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
 
             </div>
