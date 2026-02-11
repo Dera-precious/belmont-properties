@@ -5,23 +5,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Building2, Users, BookOpen, ShieldCheck, Scale,
-    Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag // ADDED: ShoppingBag Icon
+    Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag, Wallet // ADDED: Wallet Icon
 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
 const menuItems = [
     { icon: LayoutDashboard, label: "Central Hub", href: "/" },
+    { icon: Wallet, label: "Wallet", href: "/wallet" }, // NEW WALLET LINK
     { icon: Building2, label: "Listings", href: "/listings" },
     { icon: Users, label: "Collab", href: "/collab" },
     { icon: BookOpen, label: "Mentorship", href: "/mentorship" },
-    // 1. TRUST CENTER
     { icon: ShieldCheck, label: "Trust Center", href: "/services" },
-    // 2. SUPPLIES (New Marketplace Link)
     { icon: ShoppingBag, label: "Supplies", href: "/supplies" },
-    // 3. LEGAL HUB
     { icon: Scale, label: "Legal Docs", href: "/legal" },
-    // 4. ADMIN PANEL
     { icon: LayoutDashboard, label: "Admin Panel", href: "/admin" },
 ];
 
@@ -31,13 +28,10 @@ export default function Sidebar() {
     const { user } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
-    // Hide sidebar on login/onboarding
     if (pathname === '/login' || pathname?.includes('/onboarding')) return null;
 
     return (
         <aside className={`hidden md:flex flex-col bg-[#0F172A] text-white h-screen sticky top-0 border-r border-gray-800 transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'}`}>
-
-            {/* COLLAPSE ARROW */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute -right-3 top-10 bg-[#D4AF37] text-[#0F172A] p-1 rounded-full shadow-lg hover:scale-110 transition-transform z-50"
