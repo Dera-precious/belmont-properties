@@ -2,10 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
-import EntranceAnim from "@/components/EntranceAnim";
+// REMOVED: EntranceAnim import (It belongs in page.tsx only)
 import { AuthProvider } from "@/app/context/AuthContext";
 import { ThemeProvider } from "@/app/context/ThemeContext";
-// NEW: Import the Booking Provider
 import { BookingProvider } from "@/app/context/BookingContext";
 
 export const metadata: Metadata = {
@@ -36,11 +35,9 @@ export default function RootLayout({
             <body className="bg-[#FAFAF9] dark:bg-[#0F172A] font-sans">
                 <ThemeProvider>
                     <AuthProvider>
-                        {/* 1. WRAP THE APP WITH BOOKING PROVIDER */}
                         <BookingProvider>
 
-                            {/* The Entrance Animation sits here */}
-                            <EntranceAnim />
+                            {/* REMOVED: <EntranceAnim /> - It was causing the double flash! */}
 
                             <div className="flex min-h-screen pb-20 md:pb-0 transition-colors duration-500">
 

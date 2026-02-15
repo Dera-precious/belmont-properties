@@ -45,7 +45,10 @@ export default function SignupPage() {
         setTimeout(() => {
             // In a real app, verify payment success here
             login(email, finalRole as any, fullName);
-            router.push('/');
+
+            // REDIRECT TO SUCCESS PAGE (Payment Confirmed)
+            router.push('/success');
+
             setIsLoading(false);
         }, 2000);
     };
@@ -167,7 +170,6 @@ export default function SignupPage() {
                                             <span className="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded">Full Access</span>
                                             <span className="px-2 py-1 bg-gray-100 dark:bg-white/10 rounded">Priority Support</span>
                                         </div>
-                                        {/* Removed Circle */}
                                     </button>
 
                                     <button onClick={() => setSelectedPlan('onetime')} className={`w-full p-6 rounded-2xl border-2 text-left relative transition-all ${selectedPlan === 'onetime' ? 'border-[#0F172A] dark:border-white bg-gray-50 dark:bg-white/5' : 'border-gray-200 dark:border-gray-800 hover:border-gray-400'}`}>
@@ -176,7 +178,6 @@ export default function SignupPage() {
                                             <span className="font-serif font-bold text-xl">₦2,000</span>
                                         </div>
                                         <p className="text-xs text-gray-500">Single transaction fee.</p>
-                                        {/* Removed Circle */}
                                     </button>
                                 </div>
                             ) : (
@@ -193,7 +194,6 @@ export default function SignupPage() {
                                             <span className="px-2 py-1 bg-white/50 dark:bg-white/10 rounded">Verified Badge</span>
                                             <span className="px-2 py-1 bg-white/50 dark:bg-white/10 rounded">Listing Rights</span>
                                         </div>
-                                        {/* Removed Circle */}
                                     </div>
                                 </div>
                             )}

@@ -2,29 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Import Image for Landing Page logo
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import {
     Building2, Users, ArrowRight, Shield,
     Plus, TrendingUp, MapPin, Edit2, X, Check,
     UploadCloud, Link as LinkIcon, GraduationCap, Loader2,
-    Wand2, ShoppingBag, CheckCircle2, Globe, LayoutDashboard
+    Wand2, ShoppingBag
 } from 'lucide-react';
 
+// Using the @ alias which is standard in Next.js
+import EntranceAnim from '@/components/EntranceAnim';
+
 export default function Home() {
-    // HOOKS
     const { user, updateListing } = useAuth();
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
 
-    // DASHBOARD STATE (Only used if logged in)
+    // LANDING PAGE STATE
+    // Default to FALSE. Content is invisible until we say so.
+    const [showLandingContent, setShowLandingContent] = useState(false);
+
+    // DASHBOARD STATE
     const [editingItem, setEditingItem] = useState<any | null>(null);
     const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
     const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
     const [viewingItem, setViewingItem] = useState<any | null>(null);
 
     useEffect(() => setIsMounted(true), []);
+
+    // ANTI-FLASH LOGIC
+    useEffect(() => {
+        // If user exists, we are in Dashboard mode, so reset landing state
+        if (user) {
+            setShowLandingContent(false);
+        } else {
+            // User just logged out (or is guest).
+            // Keep content hidden for 2 seconds to let EntranceAnim play fully.
+            const timer = setTimeout(() => setShowLandingContent(true), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [user]);
 
     // EDITING EFFECT
     useEffect(() => {
@@ -34,7 +53,6 @@ export default function Home() {
         }
     }, [editingItem]);
 
-    // LOADING STATE
     if (!isMounted) {
         return (
             <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] flex items-center justify-center">
@@ -48,97 +66,118 @@ export default function Home() {
     // =====================================================================================
     if (!user) {
         return (
-            <div className="min-h-screen bg-[#0F172A] text-white font-sans overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0F172A]">
+            // FORCE DARK BACKGROUND IMMEDIATELY
+            <div key="landing-page" className="min-h-screen bg-[#0F172A] text-white font-sans overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0F172A] relative">
 
-                {/* NAV */}
-                <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto relative z-20">
-                    <div className="flex items-center gap-2">
-                        <div className="relative w-8 h-8">
-                            <Image src="/belmont-logo-gold.png" alt="Logo" fill className="object-contain" />
+                {/* 1. THE ANIMATION COMPONENT */}
+                <EntranceAnim />
+
+                {/* 2. THE SAFETY CURTAIN (The "Belt and Suspenders" Fix) */}
+                {/* This simple div covers everything instantly if the animation is slow to load */}
+                {!showLandingContent && (
+                    <div className="fixed inset-0 bg-[#0F172A] z-50 pointer-events-none" />
+                )}
+
+                {/* 3. CONTENT WRAPPER */}
+                {/* We use opacity transition for a smooth reveal after the curtain lifts */}
+                <div className={`transition-opacity duration-1000 ease-in-out ${showLandingContent ? 'opacity-100' : 'opacity-0'}`}>
+
+                    {/* NAV */}
+                    <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto relative z-20">
+                        <div className="flex items-center gap-2">
+                            <div className="relative w-8 h-8">
+                                {/* Added 'sizes' prop to fix console warning */}
+                                <Image
+                                    src="/belmont-logo-gold.png"
+                                    alt="Logo"
+                                    fill
+                                    className="object-contain"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                />
+                            </div>
+                            <span className="font-serif font-bold text-lg tracking-widest text-[#D4AF37]">BELMONT</span>
                         </div>
-                        <span className="font-serif font-bold text-lg tracking-widest text-[#D4AF37]">BELMONT</span>
-                    </div>
-                    <div className="flex gap-4">
-                        <Link href="/login" className="px-6 py-2 text-sm font-bold hover:text-[#D4AF37] transition-colors">Log In</Link>
-                        <Link href="/signup" className="px-6 py-2 bg-white text-[#0F172A] rounded-full text-sm font-bold hover:bg-[#D4AF37] transition-colors">Get Started</Link>
-                    </div>
-                </nav>
-
-                {/* HERO SECTION */}
-                <header className="relative pt-20 pb-40 px-6 text-center max-w-5xl mx-auto">
-                    {/* Background Glows */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
-                    <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[100px] -z-10"></div>
-
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
-                        <span className="text-xs font-bold tracking-wide uppercase text-gray-300">The Operating System for African Real Estate</span>
-                    </div>
-
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold leading-tight mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
-                        Build your legacy <br /> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-amber-200">precision.</span>
-                    </h1>
-
-                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-                        Connect with elite architects, secure verified supplies, and manage your property portfolio on one unified platform.
-                    </p>
-
-                    <div className="flex flex-col md:flex-row justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
-                        <Link href="/signup" className="px-10 py-4 bg-[#D4AF37] text-[#0F172A] font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(212,175,55,0.3)]">
-                            Start Building
-                        </Link>
-                        <Link href="/login" className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold text-lg rounded-full hover:bg-white/20 transition-colors">
-                            View Demo
-                        </Link>
-                    </div>
-
-                    {/* SOCIAL PROOF */}
-                    <div className="mt-20 pt-10 border-t border-white/5 animate-in fade-in duration-1000 delay-700">
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Trusted By Industry Leaders</p>
-                        <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                            <span className="text-xl font-serif font-bold">Jenew Homes</span>
-                            <span className="text-xl font-serif font-bold">Lekki Gardens</span>
-                            <span className="text-xl font-serif font-bold">Eko Atlantic</span>
-                            <span className="text-xl font-serif font-bold">Vantage</span>
+                        <div className="flex gap-4">
+                            <Link href="/login" className="px-6 py-2 text-sm font-bold hover:text-[#D4AF37] transition-colors">Log In</Link>
+                            <Link href="/signup" className="px-6 py-2 bg-white text-[#0F172A] rounded-full text-sm font-bold hover:bg-[#D4AF37] transition-colors">Get Started</Link>
                         </div>
-                    </div>
-                </header>
+                    </nav>
 
-                {/* FEATURE GRID */}
-                <section className="py-32 bg-[#020617] relative">
-                    <div className="max-w-7xl mx-auto px-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {[
-                                { icon: ShoppingBag, title: "Supply Depot", desc: "Source verified materials directly from manufacturers." },
-                                { icon: Shield, title: "Trust Center", desc: "Book MOPOL escorts and verify land titles instantly." },
-                                { icon: Wand2, title: "AI Architect", desc: "Generate construction blueprints in seconds with AI." },
-                            ].map((feature, i) => (
-                                <div key={i} className="p-8 rounded-3xl bg-[#0F172A] border border-white/5 hover:border-[#D4AF37]/50 transition-colors group">
-                                    <div className="w-14 h-14 bg-[#020617] rounded-2xl flex items-center justify-center text-[#D4AF37] mb-6 group-hover:scale-110 transition-transform">
-                                        <feature.icon size={28} />
+                    {/* HERO SECTION */}
+                    <header className="relative pt-20 pb-40 px-6 text-center max-w-5xl mx-auto">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
+                        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[100px] -z-10"></div>
+
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
+                            <span className="text-xs font-bold tracking-wide uppercase text-gray-300">The Operating System for African Real Estate</span>
+                        </div>
+
+                        <h1 className="text-5xl md:text-7xl font-serif font-bold leading-tight mb-8">
+                            Build your legacy <br /> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-amber-200">precision.</span>
+                        </h1>
+
+                        <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+                            Connect with elite architects, secure verified supplies, and manage your property portfolio on one unified platform.
+                        </p>
+
+                        <div className="flex flex-col md:flex-row justify-center gap-4">
+                            <Link href="/signup" className="px-10 py-4 bg-[#D4AF37] text-[#0F172A] font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(212,175,55,0.3)]">
+                                Start Building
+                            </Link>
+                            <Link href="/login" className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold text-lg rounded-full hover:bg-white/20 transition-colors">
+                                View Demo
+                            </Link>
+                        </div>
+
+                        {/* SOCIAL PROOF */}
+                        <div className="mt-20 pt-10 border-t border-white/5">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Trusted By Industry Leaders</p>
+                            <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                                <span className="text-xl font-serif font-bold">Jenew Homes</span>
+                                <span className="text-xl font-serif font-bold">Lekki Gardens</span>
+                                <span className="text-xl font-serif font-bold">Eko Atlantic</span>
+                                <span className="text-xl font-serif font-bold">Vantage</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* FEATURE GRID */}
+                    <section className="py-32 bg-[#020617] relative">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                {[
+                                    { icon: ShoppingBag, title: "Supply Depot", desc: "Source verified materials directly from manufacturers." },
+                                    { icon: Shield, title: "Trust Center", desc: "Book MOPOL escorts and verify land titles instantly." },
+                                    { icon: Wand2, title: "AI Architect", desc: "Generate construction blueprints in seconds with AI." },
+                                ].map((feature, i) => (
+                                    <div key={i} className="p-8 rounded-3xl bg-[#0F172A] border border-white/5 hover:border-[#D4AF37]/50 transition-colors group">
+                                        <div className="w-14 h-14 bg-[#020617] rounded-2xl flex items-center justify-center text-[#D4AF37] mb-6 group-hover:scale-110 transition-transform">
+                                            <feature.icon size={28} />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
+                                        <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
                                     </div>
-                                    <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
-                                    <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                {/* FOOTER CTA */}
-                <section className="py-24 text-center px-6">
-                    <h2 className="text-4xl font-serif font-bold mb-8">Ready to modernize your workflow?</h2>
-                    <Link href="/signup" className="inline-flex items-center gap-2 px-12 py-5 bg-white text-[#0F172A] font-bold text-xl rounded-full hover:bg-gray-100 transition-colors">
-                        Get Started Now <ArrowRight size={20} />
-                    </Link>
-                </section>
+                    {/* FOOTER CTA */}
+                    <section className="py-24 text-center px-6">
+                        <h2 className="text-4xl font-serif font-bold mb-8">Ready to modernize your workflow?</h2>
+                        <Link href="/signup" className="inline-flex items-center gap-2 px-12 py-5 bg-white text-[#0F172A] font-bold text-xl rounded-full hover:bg-gray-100 transition-colors">
+                            Get Started Now <ArrowRight size={20} />
+                        </Link>
+                    </section>
+                </div>
 
             </div>
         );
     }
 
     // =====================================================================================
-    // 2. DASHBOARD (If Logged In) - Your Existing Code
+    // 2. DASHBOARD (If Logged In)
     // =====================================================================================
     const userName = user.name ? user.name.split(' ')[0] : 'Guest';
     const userTier = user.tier || 'Free';
@@ -172,7 +211,7 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
+        <div key="dashboard" className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
 
             {/* DASHBOARD HERO */}
             <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-24 md:pb-32 relative overflow-hidden shadow-2xl">

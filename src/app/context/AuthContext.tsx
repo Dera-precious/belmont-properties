@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// UPDATED INTERFACE (Fixes the TS Error)
+// INTERFACES
 interface Listing {
     id: number;
     title: string;
     price: string;
     location: string;
-    description: string; // Added this!
+    description: string;
     image: string;
     status: 'Active' | 'Pending';
 }
@@ -94,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...data,
             status: 'Active'
         };
-        // SPREAD PREVIOUS LISTINGS CORRECTLY
         const updatedListings = [newListing, ...(user.myListings || [])];
         const updatedUser = { ...user, myListings: updatedListings };
         setUser(updatedUser);
@@ -114,7 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('belmont_user');
-        router.push('/login');
+
+        // --- CRITICAL FIX ---
+        // We redirect to '/' (Home) instead of '/login'.
+        // This allows src/app/page.tsx to load and play the Entrance Animation.
+        router.push('/');
     };
 
     return (
