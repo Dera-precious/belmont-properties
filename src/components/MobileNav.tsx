@@ -9,7 +9,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import {
     LayoutDashboard, Search, Users, BookOpen, Scale,
     Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock,
-    ShoppingBag, Wallet, Home as HomeIcon
+    ShoppingBag, Wallet, Home as HomeIcon, LogIn
 } from 'lucide-react';
 
 export default function MobileNav() {
@@ -33,33 +33,38 @@ export default function MobileNav() {
         { name: 'Admin Panel', icon: <Lock size={20} />, path: '/admin' },
     ];
 
-    // SECURITY FIX: Hide Mobile Nav if user is not logged in
-    if (!user) return null;
+    // REMOVED: The check that hid the nav on login/signup
+    // It will now render on all pages.
 
     return (
         <>
-            {/* 1. BOTTOM BAR (Always Visible - High Z-Index) */}
+            {/* 1. BOTTOM BAR (Always Visible) */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1E293B] border-t border-gray-200 dark:border-gray-800 p-4 flex justify-around items-center z-50 transition-colors duration-500 safe-area-bottom shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                 <Link href="/" className={`p-2 rounded-xl ${pathname === '/' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
                     <LayoutDashboard size={24} />
                 </Link>
-                <Link href="/listings" className={`p-2 rounded-xl ${pathname === '/listings' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
-                    <Search size={24} />
+                {/* Listings - Locked if no user */}
+                <Link href={user ? "/listings" : "/login"} className={`p-2 rounded-xl ${pathname === '/listings' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+                    {user ? <Search size={24} /> : <Lock size={24} />}
                 </Link>
+
                 <div className="relative -top-5">
                     <button onClick={toggleMenu} className="w-14 h-14 bg-[#0F172A] dark:bg-[#D4AF37] rounded-full flex items-center justify-center text-white dark:text-[#0F172A] shadow-xl hover:scale-105 transition-transform border-4 border-[#FAFAF9] dark:border-[#0F172A]">
                         {isOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
-                <Link href="/collab" className={`p-2 rounded-xl ${pathname === '/collab' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
-                    <Users size={24} />
+
+                {/* Collab - Locked if no user */}
+                <Link href={user ? "/collab" : "/login"} className={`p-2 rounded-xl ${pathname === '/collab' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+                    {user ? <Users size={24} /> : <Lock size={24} />}
                 </Link>
-                <Link href="/profile" className={`p-2 rounded-xl ${pathname === '/profile' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+                {/* Profile - Login if no user */}
+                <Link href={user ? "/profile" : "/login"} className={`p-2 rounded-xl ${pathname === '/profile' ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
                     <User size={24} />
                 </Link>
             </div>
 
-            {/* 2. FULL SCREEN MENU OVERLAY (Scroll Fixed) */}
+            {/* 2. FULL SCREEN MENU OVERLAY */}
             {isOpen && (
                 <div className="md:hidden fixed inset-0 bg-[#FAFAF9] dark:bg-[#0F172A] z-40 flex flex-col animate-in slide-in-from-bottom-10 duration-300">
 
@@ -89,24 +94,38 @@ export default function MobileNav() {
 
                         {/* Menu Items Grid */}
                         <div className="space-y-2">
-                            {menuItems.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    href={item.path}
-                                    onClick={() => setIsOpen(false)}
-                                    className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg translate-x-2' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                                >
-                                    {item.icon}
-                                    <span>{item.name}</span>
-                                </Link>
-                            ))}
+                            {menuItems.map((item) => {
+                                const isLocked = !user && item.path !== '/';
+                                const destination = isLocked ? '/login' : item.path;
+
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        href={destination}
+                                        onClick={() => setIsOpen(false)}
+                                        className={`flex items-center gap-4 p-4 rounded-xl font-bold transition-all ${pathname === item.path ? 'bg-[#D4AF37] text-[#0F172A] shadow-lg translate-x-2' : 'bg-white dark:bg-[#1E293B] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'} ${isLocked ? 'opacity-70' : ''}`}
+                                    >
+                                        {isLocked ? <Lock size={20} /> : item.icon}
+                                        <span>{item.name}</span>
+                                        {isLocked && <span className="ml-auto text-[10px] font-bold uppercase bg-gray-200 dark:bg-gray-700 text-gray-500 px-2 py-1 rounded">Locked</span>}
+                                    </Link>
+                                );
+                            })}
                         </div>
 
-                        {/* Logout Button */}
+                        {/* Login / Logout Button */}
                         <div className="mt-8">
-                            <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-100 dark:border-red-900/30">
-                                <LogOut size={20} /> Log Out
-                            </button>
+                            {user ? (
+                                <button onClick={() => { logout(); setIsOpen(false); }} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-100 dark:border-red-900/30">
+                                    <LogOut size={20} /> Log Out
+                                </button>
+                            ) : (
+                                <Link href="/login" onClick={() => setIsOpen(false)}>
+                                    <button className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] rounded-xl font-bold flex items-center justify-center gap-2">
+                                        <LogIn size={20} /> Log In
+                                    </button>
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
