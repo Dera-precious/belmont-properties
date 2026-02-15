@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext'; // Fixed Import Path
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -106,7 +106,7 @@ export default function MentorshipPage() {
 
             <div className="p-8 pt-0 space-y-12 max-w-7xl mx-auto">
 
-                {/* 1. FEATURED MASTERCLASS (From Your Code) */}
+                {/* 1. FEATURED MASTERCLASS */}
                 <section className="relative h-[400px] rounded-3xl overflow-hidden group cursor-pointer shadow-2xl">
                     <div className="absolute inset-0 bg-cover bg-center transition-transform duration-[2s] group-hover:scale-105" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop")' }} />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/80 to-transparent" />
@@ -214,7 +214,7 @@ export default function MentorshipPage() {
                     </div>
                 </section>
 
-                {/* 3. PREMIUM VAULT (From Your Code) */}
+                {/* 3. PREMIUM VAULT */}
                 <section>
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-bold flex items-center gap-2 text-[#0F172A] dark:text-white">
