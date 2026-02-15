@@ -2,41 +2,31 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Image for Landing Page logo
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import {
     Building2, Users, ArrowRight, Shield,
-    Plus, HardHat, TrendingUp, MapPin, Edit2, X, Check,
-    UploadCloud, Link as LinkIcon, GraduationCap, Scale, Loader2,
-    Wand2, // Existing AI Icon
-    ShoppingBag // NEW: Imported for Supply Depot
+    Plus, TrendingUp, MapPin, Edit2, X, Check,
+    UploadCloud, Link as LinkIcon, GraduationCap, Loader2,
+    Wand2, ShoppingBag, CheckCircle2, Globe, LayoutDashboard
 } from 'lucide-react';
 
 export default function Home() {
-    // =========================================================
-    // 1. DECLARE ALL HOOKS FIRST (DO NOT PUT ANY 'IF' CHECKS YET)
-    // =========================================================
+    // HOOKS
     const { user, updateListing } = useAuth();
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
 
-    // --- MOVE THESE VARIABLES UP HERE ---
+    // DASHBOARD STATE (Only used if logged in)
     const [editingItem, setEditingItem] = useState<any | null>(null);
     const [editImageMode, setEditImageMode] = useState<'upload' | 'link'>('upload');
     const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
     const [viewingItem, setViewingItem] = useState<any | null>(null);
-    // =========================================================
 
     useEffect(() => setIsMounted(true), []);
 
-    // SECURITY CHECK
-    useEffect(() => {
-        if (isMounted && !user) {
-            router.push('/login');
-        }
-    }, [isMounted, user, router]);
-
-    // Editing Effect
+    // EDITING EFFECT
     useEffect(() => {
         if (editingItem) {
             setEditPreviewUrl(editingItem.image);
@@ -44,10 +34,8 @@ export default function Home() {
         }
     }, [editingItem]);
 
-    // =========================================================
-    // 2. NOW WE CAN DO THE LOADING CHECK (SAFE TO RETURN HERE)
-    // =========================================================
-    if (!isMounted || !user) {
+    // LOADING STATE
+    if (!isMounted) {
         return (
             <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#D4AF37]" size={48} />
@@ -55,9 +43,103 @@ export default function Home() {
         );
     }
 
-    // =========================================================
-    // 3. REST OF THE APP LOGIC
-    // =========================================================
+    // =====================================================================================
+    // 1. PUBLIC LANDING PAGE (If NOT Logged In)
+    // =====================================================================================
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-[#0F172A] text-white font-sans overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0F172A]">
+
+                {/* NAV */}
+                <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto relative z-20">
+                    <div className="flex items-center gap-2">
+                        <div className="relative w-8 h-8">
+                            <Image src="/belmont-logo-gold.png" alt="Logo" fill className="object-contain" />
+                        </div>
+                        <span className="font-serif font-bold text-lg tracking-widest text-[#D4AF37]">BELMONT</span>
+                    </div>
+                    <div className="flex gap-4">
+                        <Link href="/login" className="px-6 py-2 text-sm font-bold hover:text-[#D4AF37] transition-colors">Log In</Link>
+                        <Link href="/signup" className="px-6 py-2 bg-white text-[#0F172A] rounded-full text-sm font-bold hover:bg-[#D4AF37] transition-colors">Get Started</Link>
+                    </div>
+                </nav>
+
+                {/* HERO SECTION */}
+                <header className="relative pt-20 pb-40 px-6 text-center max-w-5xl mx-auto">
+                    {/* Background Glows */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10"></div>
+                    <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[100px] -z-10"></div>
+
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
+                        <span className="text-xs font-bold tracking-wide uppercase text-gray-300">The Operating System for African Real Estate</span>
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl font-serif font-bold leading-tight mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
+                        Build your legacy <br /> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-amber-200">precision.</span>
+                    </h1>
+
+                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+                        Connect with elite architects, secure verified supplies, and manage your property portfolio on one unified platform.
+                    </p>
+
+                    <div className="flex flex-col md:flex-row justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+                        <Link href="/signup" className="px-10 py-4 bg-[#D4AF37] text-[#0F172A] font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(212,175,55,0.3)]">
+                            Start Building
+                        </Link>
+                        <Link href="/login" className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold text-lg rounded-full hover:bg-white/20 transition-colors">
+                            View Demo
+                        </Link>
+                    </div>
+
+                    {/* SOCIAL PROOF */}
+                    <div className="mt-20 pt-10 border-t border-white/5 animate-in fade-in duration-1000 delay-700">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Trusted By Industry Leaders</p>
+                        <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                            <span className="text-xl font-serif font-bold">Jenew Homes</span>
+                            <span className="text-xl font-serif font-bold">Lekki Gardens</span>
+                            <span className="text-xl font-serif font-bold">Eko Atlantic</span>
+                            <span className="text-xl font-serif font-bold">Vantage</span>
+                        </div>
+                    </div>
+                </header>
+
+                {/* FEATURE GRID */}
+                <section className="py-32 bg-[#020617] relative">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {[
+                                { icon: ShoppingBag, title: "Supply Depot", desc: "Source verified materials directly from manufacturers." },
+                                { icon: Shield, title: "Trust Center", desc: "Book MOPOL escorts and verify land titles instantly." },
+                                { icon: Wand2, title: "AI Architect", desc: "Generate construction blueprints in seconds with AI." },
+                            ].map((feature, i) => (
+                                <div key={i} className="p-8 rounded-3xl bg-[#0F172A] border border-white/5 hover:border-[#D4AF37]/50 transition-colors group">
+                                    <div className="w-14 h-14 bg-[#020617] rounded-2xl flex items-center justify-center text-[#D4AF37] mb-6 group-hover:scale-110 transition-transform">
+                                        <feature.icon size={28} />
+                                    </div>
+                                    <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
+                                    <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* FOOTER CTA */}
+                <section className="py-24 text-center px-6">
+                    <h2 className="text-4xl font-serif font-bold mb-8">Ready to modernize your workflow?</h2>
+                    <Link href="/signup" className="inline-flex items-center gap-2 px-12 py-5 bg-white text-[#0F172A] font-bold text-xl rounded-full hover:bg-gray-100 transition-colors">
+                        Get Started Now <ArrowRight size={20} />
+                    </Link>
+                </section>
+
+            </div>
+        );
+    }
+
+    // =====================================================================================
+    // 2. DASHBOARD (If Logged In) - Your Existing Code
+    // =====================================================================================
     const userName = user.name ? user.name.split(' ')[0] : 'Guest';
     const userTier = user.tier || 'Free';
     const myListings = user.myListings || [];
@@ -66,16 +148,13 @@ export default function Home() {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setEditPreviewUrl(reader.result as string);
-            };
+            reader.onloadend = () => setEditPreviewUrl(reader.result as string);
             reader.readAsDataURL(file);
         }
     };
 
     const handleEditUrlBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const url = e.target.value;
-        if (url) setEditPreviewUrl(url);
+        if (e.target.value) setEditPreviewUrl(e.target.value);
     };
 
     const handleSaveEdit = (e: React.FormEvent) => {
@@ -95,7 +174,7 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
 
-            {/* HERO */}
+            {/* DASHBOARD HERO */}
             <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-24 md:pb-32 relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div className="max-w-6xl mx-auto relative z-10">
@@ -109,39 +188,23 @@ export default function Home() {
 
             {/* ACTION BUTTONS */}
             <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-20 mb-12">
-                {/* Updated Grid to fit 5 items comfortably on large screens */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-
                     {/* 1. Upload Property */}
                     <Link href="/upload" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
-                                <Plus size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Upload Property</h3>
-                                <p className="text-[10px] text-gray-500">List on Market</p>
-                            </div>
+                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400"><Plus size={20} /></div>
+                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Upload Property</h3><p className="text-[10px] text-gray-500">List on Market</p></div>
                         </div>
-                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors">
-                            <ArrowRight size={12} />
-                        </div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
                     {/* 2. AI Architect */}
                     <Link href="/plan" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]">
-                                <Wand2 size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-[#0F172A] dark:text-white">AI Architect</h3>
-                                <p className="text-[10px] text-gray-500">Generate Blueprints</p>
-                            </div>
+                            <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><Wand2 size={20} /></div>
+                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">AI Architect</h3><p className="text-[10px] text-gray-500">Generate Blueprints</p></div>
                         </div>
-                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors">
-                            <ArrowRight size={12} />
-                        </div>
+                        <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
                     {/* 3. Find Mentor */}
@@ -156,20 +219,14 @@ export default function Home() {
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
 
-                    {/* 5. SUPPLY DEPOT (NEW) */}
+                    {/* 5. SUPPLY DEPOT */}
                     <Link href="/supplies" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400">
-                                <ShoppingBag size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Supplies</h3>
-                                <p className="text-[10px] text-gray-500">Materials Market</p>
-                            </div>
+                            <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400"><ShoppingBag size={20} /></div>
+                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Supplies</h3><p className="text-[10px] text-gray-500">Materials Market</p></div>
                         </div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
-
                 </div>
             </div>
 
@@ -179,25 +236,11 @@ export default function Home() {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-[#0F172A] dark:text-white flex items-center gap-2"><Building2 size={18} /> My Recent Listings</h3>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {myListings.map((item) => (
-                            <div
-                                key={item.id}
-                                onClick={() => setViewingItem(item)} // TRIGGER "RISE UP" EFFECT
-                                className="group bg-white dark:bg-[#1E293B] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative cursor-pointer"
-                            >
-                                {/* EDIT BUTTON */}
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
-                                    className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md p-2 rounded-full text-white hover:bg-[#D4AF37] transition-colors shadow-sm"
-                                >
-                                    <Edit2 size={16} />
-                                </button>
-
-                                <div className="h-48 w-full overflow-hidden">
-                                    <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                </div>
+                            <div key={item.id} onClick={() => setViewingItem(item)} className="group bg-white dark:bg-[#1E293B] rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative cursor-pointer">
+                                <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); }} className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md p-2 rounded-full text-white hover:bg-[#D4AF37] transition-colors shadow-sm"><Edit2 size={16} /></button>
+                                <div className="h-48 w-full overflow-hidden"><img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /></div>
                                 <div className="p-5">
                                     <h4 className="font-bold text-lg text-[#0F172A] dark:text-white line-clamp-1 mb-1">{item.title}</h4>
                                     <p className="text-[#D4AF37] font-serif font-bold text-xl mb-3">{item.price}</p>

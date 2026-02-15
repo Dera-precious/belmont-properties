@@ -9,7 +9,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import {
     LayoutDashboard, Search, Users, BookOpen, Scale,
     Menu, X, LogOut, User, Moon, Sun, ShieldCheck, Lock,
-    ShoppingBag, Wallet, Home as HomeIcon // ADDED: Home Icon
+    ShoppingBag, Wallet, Home as HomeIcon
 } from 'lucide-react';
 
 export default function MobileNav() {
@@ -22,7 +22,7 @@ export default function MobileNav() {
 
     const menuItems = [
         { name: 'Central Hub', icon: <LayoutDashboard size={20} />, path: '/' },
-        { name: 'My Home', icon: <HomeIcon size={20} />, path: '/tenant' }, // NEW: Tenant Portal
+        { name: 'My Home', icon: <HomeIcon size={20} />, path: '/tenant' },
         { name: 'Wallet', icon: <Wallet size={20} />, path: '/wallet' },
         { name: 'Listings', icon: <Search size={20} />, path: '/listings' },
         { name: 'Collab', icon: <Users size={20} />, path: '/collab' },
@@ -33,9 +33,8 @@ export default function MobileNav() {
         { name: 'Admin Panel', icon: <Lock size={20} />, path: '/admin' },
     ];
 
-    if (pathname === '/login' || pathname?.includes('/onboarding')) {
-        return null;
-    }
+    // SECURITY FIX: Hide Mobile Nav if user is not logged in
+    if (!user) return null;
 
     return (
         <>

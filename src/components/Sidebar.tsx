@@ -6,14 +6,14 @@ import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Building2, Users, BookOpen, ShieldCheck, Scale,
     Moon, Sun, ChevronLeft, ChevronRight, ShoppingBag, Wallet,
-    Home as HomeIcon // ADDED: Home Icon
+    Home as HomeIcon
 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
 const menuItems = [
     { icon: LayoutDashboard, label: "Central Hub", href: "/" },
-    { icon: HomeIcon, label: "My Home", href: "/tenant" }, // NEW: Tenant Portal
+    { icon: HomeIcon, label: "My Home", href: "/tenant" },
     { icon: Wallet, label: "Wallet", href: "/wallet" },
     { icon: Building2, label: "Listings", href: "/listings" },
     { icon: Users, label: "Collab", href: "/collab" },
@@ -30,7 +30,9 @@ export default function Sidebar() {
     const { user } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
-    if (pathname === '/login' || pathname?.includes('/onboarding')) return null;
+    // SECURITY FIX: Hide Sidebar if user is not logged in
+    // This ensures guests only see the Landing Page/Login/Signup
+    if (!user) return null;
 
     return (
         <aside className={`hidden md:flex flex-col bg-[#0F172A] text-white h-screen sticky top-0 border-r border-gray-800 transition-all duration-300 relative ${isCollapsed ? 'w-20' : 'w-64'}`}>
@@ -56,7 +58,6 @@ export default function Sidebar() {
             </div>
 
             {/* SCROLLABLE NAVIGATION AREA */}
-            {/* Added: overflow-y-auto no-scrollbar */}
             <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar pb-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
