@@ -83,23 +83,41 @@ export default function Home() {
                 <div className={`transition-opacity duration-1000 ease-in-out ${showLandingContent ? 'opacity-100' : 'opacity-0'}`}>
 
                     {/* NAV */}
+                    {/* NAV - FIXED ALIGNMENT */}
                     <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto relative z-20">
-                        <div className="flex items-center gap-2">
-                            <div className="relative w-8 h-8">
-                                {/* Added 'sizes' prop to fix console warning */}
+
+                        {/* LOGO AREA */}
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-8 h-8 md:w-10 md:h-10">
                                 <Image
                                     src="/belmont-logo-gold.png"
                                     alt="Logo"
                                     fill
                                     className="object-contain"
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    sizes="40px"
                                 />
                             </div>
-                            <span className="font-serif font-bold text-lg tracking-widest text-[#D4AF37]">BELMONT</span>
+                            <span className="font-serif font-bold text-lg md:text-xl tracking-[0.2em] text-[#D4AF37]">BELMONT</span>
                         </div>
-                        <div className="flex gap-4">
-                            <Link href="/login" className="px-6 py-2 text-sm font-bold hover:text-[#D4AF37] transition-colors">Log In</Link>
-                            <Link href="/signup" className="px-6 py-2 bg-white text-[#0F172A] rounded-full text-sm font-bold hover:bg-[#D4AF37] transition-colors">Get Started</Link>
+
+                        {/* AUTH BUTTONS AREA - FIXED SPACING */}
+                        <div className="flex items-center gap-4 md:gap-6">
+
+                            {/* LOG IN LINK: Added whitespace-nowrap to prevent line breaks */}
+                            <Link
+                                href="/login"
+                                className="text-sm font-bold text-gray-300 hover:text-white transition-colors whitespace-nowrap"
+                            >
+                                Log In
+                            </Link>
+
+                            {/* GET STARTED BUTTON */}
+                            <Link
+                                href="/signup"
+                                className="px-5 py-3 bg-white text-[#0F172A] rounded-full text-xs md:text-sm font-bold hover:bg-[#D4AF37] transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] whitespace-nowrap"
+                            >
+                                Get Started
+                            </Link>
                         </div>
                     </nav>
 
