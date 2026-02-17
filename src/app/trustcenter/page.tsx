@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import BookingModal from '@/components/BookingModal';
-// FIX: Added PenTool for Architect Card
 import { Shield, Plane, Scale, Ruler, ArrowRight, CheckCircle2, PenTool } from 'lucide-react';
 
 export default function ServicesPage() {

@@ -1,76 +1,58 @@
-'use client';
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import { AuthProvider } from "@/app/context/AuthContext";
+import { ThemeProvider } from "@/app/context/ThemeContext";
+import { BookingProvider } from "@/app/context/BookingContext";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutGrid, Home, Menu, ShoppingBag, User } from 'lucide-react'; // Updated icons to match your screenshot
-import { motion } from 'framer-motion';
+export const metadata: Metadata = {
+    title: "Belmont Properties",
+    description: "The Operating System for Real Estate",
+};
 
-export default function MobileNav() {
-    const pathname = usePathname();
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+};
 
-    // Hide on Auth pages
-    if (pathname === '/login' || pathname === '/signup') return null;
-
-    const navItems = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-        { name: 'Home', href: '/', icon: Home },
-        { name: 'Menu', href: '/menu', icon: Menu, isCenter: true }, // The Center Button
-        { name: 'Market', href: '/supplies', icon: ShoppingBag },
-        { name: 'Profile', href: '/profile', icon: User },
-    ];
-
+export default function RootLayout({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
     return (
-        <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
-            <div className="bg-[#0F172A]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl px-6 py-4 flex justify-between items-end">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = item.icon;
+        <html lang="en">
+            <head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+            </head>
 
-                    // SPECIAL STYLE FOR CENTER BUTTON (Yellow Circle)
-                    if (item.isCenter) {
-                        return (
-                            <Link key={item.name} href={item.href}>
-                                <motion.div
-                                    whileTap={{ scale: 0.9 }}
-                                    className="w-14 h-14 bg-[#D4AF37] rounded-full flex items-center justify-center text-[#0F172A] shadow-[0_0_20px_rgba(212,175,55,0.4)] -mb-8 border-4 border-[#0F172A] relative z-10"
-                                >
-                                    <Icon size={24} strokeWidth={2.5} />
-                                </motion.div>
-                            </Link>
-                        );
-                    }
+            <body className="bg-[#FAFAF9] dark:bg-[#0F172A] font-sans">
+                <ThemeProvider>
+                    <AuthProvider>
+                        <BookingProvider>
+                            <div className="flex min-h-screen pb-20 md:pb-0 transition-colors duration-500">
 
-                    // STYLE FOR SIDE BUTTONS (The ones you marked in red)
-                    return (
-                        <Link key={item.name} href={item.href}>
-                            <motion.div
-                                // THIS IS THE HOVER/ACTIVE EFFECT YOU ASKED FOR
-                                animate={{
-                                    y: isActive ? -10 : 0, // Moves up when active
-                                    scale: isActive ? 1.1 : 1,
-                                    color: isActive ? '#D4AF37' : '#9CA3AF', // Turns Gold
-                                }}
-                                whileTap={{ scale: 0.8 }}
-                                className="flex flex-col items-center gap-1 relative"
-                            >
-                                {/* The Icon */}
-                                <div className={`p-2 rounded-xl border transition-all duration-300 ${isActive ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-transparent'}`}>
-                                    <Icon size={24} strokeWidth={2} />
+                                {/* SIDEBAR - Visible to everyone */}
+                                <Sidebar />
+
+                                {/* MAIN CONTENT */}
+                                <div className="flex-1 w-full bg-[#FAFAF9] dark:bg-[#0F172A] overflow-x-hidden text-[#0F172A] dark:text-white transition-colors duration-500">
+                                    {children}
                                 </div>
 
-                                {/* Tiny Dot Indicator */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="active-dot"
-                                        className="w-1 h-1 bg-[#D4AF37] rounded-full absolute -bottom-2"
-                                    />
-                                )}
-                            </motion.div>
-                        </Link>
-                    );
-                })}
-            </div>
-        </div>
+                                {/* MOBILE NAV - Visible to everyone */}
+                                <MobileNav />
+
+                            </div>
+                        </BookingProvider>
+                    </AuthProvider>
+                </ThemeProvider>
+            </body>
+        </html>
     );
 }

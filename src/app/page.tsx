@@ -12,7 +12,6 @@ import {
     Wand2, ShoppingBag
 } from 'lucide-react';
 
-// Using the @ alias which is standard in Next.js
 import EntranceAnim from '@/components/EntranceAnim';
 
 export default function Home() {
@@ -21,7 +20,6 @@ export default function Home() {
     const [isMounted, setIsMounted] = useState(false);
 
     // LANDING PAGE STATE
-    // Default to FALSE. Content is invisible until we say so.
     const [showLandingContent, setShowLandingContent] = useState(false);
 
     // DASHBOARD STATE
@@ -34,13 +32,10 @@ export default function Home() {
 
     // ANTI-FLASH LOGIC
     useEffect(() => {
-        // If user exists, we are in Dashboard mode, so reset landing state
         if (user) {
             setShowLandingContent(false);
         } else {
-            // User just logged out (or is guest).
-            // Keep content hidden for 2 seconds to let EntranceAnim play fully.
-            const timer = setTimeout(() => setShowLandingContent(true), 2000);
+            const timer = setTimeout(() => setShowLandingContent(true), 2500);
             return () => clearTimeout(timer);
         }
     }, [user]);
@@ -66,27 +61,21 @@ export default function Home() {
     // =====================================================================================
     if (!user) {
         return (
-            // FORCE DARK BACKGROUND IMMEDIATELY
             <div key="landing-page" className="min-h-screen bg-[#0F172A] text-white font-sans overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0F172A] relative">
 
-                {/* 1. THE ANIMATION COMPONENT */}
+                {/* 1. ANIMATION */}
                 <EntranceAnim />
 
-                {/* 2. THE SAFETY CURTAIN (The "Belt and Suspenders" Fix) */}
-                {/* This simple div covers everything instantly if the animation is slow to load */}
+                {/* 2. SAFETY CURTAIN (This stops the flash) */}
                 {!showLandingContent && (
                     <div className="fixed inset-0 bg-[#0F172A] z-50 pointer-events-none" />
                 )}
 
-                {/* 3. CONTENT WRAPPER */}
-                {/* We use opacity transition for a smooth reveal after the curtain lifts */}
+                {/* 3. CONTENT */}
                 <div className={`transition-opacity duration-1000 ease-in-out ${showLandingContent ? 'opacity-100' : 'opacity-0'}`}>
 
-                    {/* NAV */}
-                    {/* NAV - FIXED ALIGNMENT */}
+                    {/* NAV - CLEANER HEADER */}
                     <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto relative z-20">
-
-                        {/* LOGO AREA */}
                         <div className="flex items-center gap-3">
                             <div className="relative w-8 h-8 md:w-10 md:h-10">
                                 <Image
@@ -94,28 +83,15 @@ export default function Home() {
                                     alt="Logo"
                                     fill
                                     className="object-contain"
-                                    sizes="40px"
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                 />
                             </div>
                             <span className="font-serif font-bold text-lg md:text-xl tracking-[0.2em] text-[#D4AF37]">BELMONT</span>
                         </div>
 
-                        {/* AUTH BUTTONS AREA - FIXED SPACING */}
-                        <div className="flex items-center gap-4 md:gap-6">
-
-                            {/* LOG IN LINK: Added whitespace-nowrap to prevent line breaks */}
-                            <Link
-                                href="/login"
-                                className="text-sm font-bold text-gray-300 hover:text-white transition-colors whitespace-nowrap"
-                            >
-                                Log In
-                            </Link>
-
-                            {/* GET STARTED BUTTON */}
-                            <Link
-                                href="/signup"
-                                className="px-5 py-3 bg-white text-[#0F172A] rounded-full text-xs md:text-sm font-bold hover:bg-[#D4AF37] transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] whitespace-nowrap"
-                            >
+                        {/* Removed "Log In" Link to reduce clutter, keeping only CTA */}
+                        <div className="flex items-center">
+                            <Link href="/signup" className="px-6 py-3 bg-white text-[#0F172A] rounded-full text-xs md:text-sm font-bold hover:bg-[#D4AF37] transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] whitespace-nowrap">
                                 Get Started
                             </Link>
                         </div>
@@ -140,15 +116,10 @@ export default function Home() {
                         </p>
 
                         <div className="flex flex-col md:flex-row justify-center gap-4">
-                            <Link href="/signup" className="px-10 py-4 bg-[#D4AF37] text-[#0F172A] font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(212,175,55,0.3)]">
-                                Start Building
-                            </Link>
-                            <Link href="/login" className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold text-lg rounded-full hover:bg-white/20 transition-colors">
-                                View Demo
-                            </Link>
+                            <Link href="/signup" className="px-10 py-4 bg-[#D4AF37] text-[#0F172A] font-bold text-lg rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(212,175,55,0.3)]">Start Building</Link>
+                            <Link href="/login" className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/10 text-white font-bold text-lg rounded-full hover:bg-white/20 transition-colors">View Demo</Link>
                         </div>
 
-                        {/* SOCIAL PROOF */}
                         <div className="mt-20 pt-10 border-t border-white/5">
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Trusted By Industry Leaders</p>
                             <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
@@ -170,9 +141,7 @@ export default function Home() {
                                     { icon: Wand2, title: "AI Architect", desc: "Generate construction blueprints in seconds with AI." },
                                 ].map((feature, i) => (
                                     <div key={i} className="p-8 rounded-3xl bg-[#0F172A] border border-white/5 hover:border-[#D4AF37]/50 transition-colors group">
-                                        <div className="w-14 h-14 bg-[#020617] rounded-2xl flex items-center justify-center text-[#D4AF37] mb-6 group-hover:scale-110 transition-transform">
-                                            <feature.icon size={28} />
-                                        </div>
+                                        <div className="w-14 h-14 bg-[#020617] rounded-2xl flex items-center justify-center text-[#D4AF37] mb-6 group-hover:scale-110 transition-transform"><feature.icon size={28} /></div>
                                         <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
                                         <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
                                     </div>
@@ -181,12 +150,9 @@ export default function Home() {
                         </div>
                     </section>
 
-                    {/* FOOTER CTA */}
                     <section className="py-24 text-center px-6">
                         <h2 className="text-4xl font-serif font-bold mb-8">Ready to modernize your workflow?</h2>
-                        <Link href="/signup" className="inline-flex items-center gap-2 px-12 py-5 bg-white text-[#0F172A] font-bold text-xl rounded-full hover:bg-gray-100 transition-colors">
-                            Get Started Now <ArrowRight size={20} />
-                        </Link>
+                        <Link href="/signup" className="inline-flex items-center gap-2 px-12 py-5 bg-white text-[#0F172A] font-bold text-xl rounded-full hover:bg-gray-100 transition-colors">Get Started Now <ArrowRight size={20} /></Link>
                     </section>
                 </div>
 
@@ -230,7 +196,6 @@ export default function Home() {
 
     return (
         <div key="dashboard" className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] font-sans transition-colors duration-500 pb-32">
-
             {/* DASHBOARD HERO */}
             <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-24 md:pb-32 relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -246,42 +211,24 @@ export default function Home() {
             {/* ACTION BUTTONS */}
             <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-20 mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                    {/* 1. Upload Property */}
                     <Link href="/upload" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400"><Plus size={20} /></div>
-                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Upload Property</h3><p className="text-[10px] text-gray-500">List on Market</p></div>
-                        </div>
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400"><Plus size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Upload Property</h3><p className="text-[10px] text-gray-500">List on Market</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
-
-                    {/* 2. AI Architect */}
                     <Link href="/plan" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><Wand2 size={20} /></div>
-                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">AI Architect</h3><p className="text-[10px] text-gray-500">Generate Blueprints</p></div>
-                        </div>
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center text-[#D4AF37]"><Wand2 size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">AI Architect</h3><p className="text-[10px] text-gray-500">Generate Blueprints</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
-
-                    {/* 3. Find Mentor */}
                     <Link href="/mentorship" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400"><GraduationCap size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Find Mentor</h3><p className="text-[10px] text-gray-500">Expert Guidance</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
-
-                    {/* 4. Trust Center */}
-                    <Link href="/services" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
+                    <Link href="/trustcenter" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-600 dark:text-red-400"><Shield size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Trust Center</h3><p className="text-[10px] text-gray-500">Book Security</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
-
-                    {/* 5. SUPPLY DEPOT */}
                     <Link href="/supplies" className="group bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 hover:border-[#D4AF37] transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400"><ShoppingBag size={20} /></div>
-                            <div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Supplies</h3><p className="text-[10px] text-gray-500">Materials Market</p></div>
-                        </div>
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400"><ShoppingBag size={20} /></div><div><h3 className="font-bold text-sm text-[#0F172A] dark:text-white">Supplies</h3><p className="text-[10px] text-gray-500">Materials Market</p></div></div>
                         <div className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-600 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] group-hover:text-[#0F172A] transition-colors"><ArrowRight size={12} /></div>
                     </Link>
                 </div>
