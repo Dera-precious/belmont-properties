@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient'; // IMPORT SUPABASE
 import { Loader2, ArrowRight, User, Briefcase, CheckCircle2, CreditCard, ShieldCheck, ArrowLeft } from 'lucide-react';
 
 export default function SignupPage() {
@@ -14,6 +15,7 @@ export default function SignupPage() {
     // NAVIGATION STATE
     const [step, setStep] = useState(1); // 1: Details, 2: Payment
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // USER DATA STATE
     const [accountType, setAccountType] = useState<'client' | 'partner'>('client');
@@ -29,34 +31,63 @@ export default function SignupPage() {
     // STEP 1: PROCEED TO PAYMENT
     const handleProceedToPayment = (e: React.FormEvent) => {
         e.preventDefault();
-        // Basic validation could go here
+        setErrorMsg(null);
+        // Basic password length validation
+        if (password.length < 6) {
+            setErrorMsg("Password must be at least 6 characters.");
+            return;
+        }
         setStep(2);
     };
 
-    // STEP 2: COMPLETE REGISTRATION
+    // STEP 2: COMPLETE REGISTRATION (Supabase Integration)
     const handleFinalizeSignup = async () => {
         setIsLoading(true);
+        setErrorMsg(null);
 
         // Determine role and full name
         const finalRole = accountType === 'partner' ? (profession || 'architect') : 'tenant';
         const fullName = `${firstName} ${lastName}`;
+        // Determine tier based on plan selection
+        const finalTier = selectedPlan === 'lifetime' || accountType === 'partner' ? 'Diamond' : 'Free';
 
-        // SIMULATE PAYMENT PROCESSING & LOGIN
-        setTimeout(() => {
-            // In a real app, verify payment success here
+        try {
+            // 1. CREATE USER IN SUPABASE
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                        role: finalRole,
+                        tier: finalTier
+                    }
+                }
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            // 2. IF SUCCESSFUL: LOGIN LOCALLY
+            // FIX: Passing arguments separately (Email, Role, Name) to match your AuthContext
             login(email, finalRole as any, fullName);
 
-            // REDIRECT TO SUCCESS PAGE (Payment Confirmed)
+            // 3. REDIRECT TO SUCCESS PAGE
             router.push('/success');
 
+        } catch (error: any) {
+            console.error("Signup Error:", error.message);
+            setErrorMsg(error.message || "Failed to create account. Please try again.");
+        } finally {
             setIsLoading(false);
-        }, 2000);
+        }
     };
 
     return (
         <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-[#FAFAF9] dark:bg-[#020617] text-[#0F172A] dark:text-white transition-colors">
 
-            {/* LEFT: VISUAL */}
+            {/* LEFT: VISUAL (KEPT EXACTLY AS IS) */}
             <div className="hidden md:flex flex-col justify-center items-start p-16 bg-[#0F172A] text-white relative overflow-hidden">
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600 opacity-10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
@@ -104,6 +135,13 @@ export default function SignupPage() {
                             {step === 1 ? "Choose your profile type to get started." : "Choose a plan to activate your workspace."}
                         </p>
                     </div>
+
+                    {/* ERROR MESSAGE DISPLAY */}
+                    {errorMsg && (
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm font-bold text-center">
+                            {errorMsg}
+                        </div>
+                    )}
 
                     {/* STEP 1: USER DETAILS */}
                     {step === 1 && (
@@ -209,7 +247,7 @@ export default function SignupPage() {
                                 <button
                                     onClick={handleFinalizeSignup}
                                     disabled={isLoading}
-                                    className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] font-bold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                    className="w-full py-4 bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] font-bold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? <Loader2 size={20} className="animate-spin" /> : <><CreditCard size={20} /> Pay & Complete Registration</>}
                                 </button>
