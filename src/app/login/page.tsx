@@ -46,8 +46,8 @@ export default function LoginPage() {
                 userMeta.tier || 'Free' // <--- ADDED 4TH ARGUMENT
             );
 
-            // 4. REDIRECT TO TENANT HOME
-            router.push('/tenant');
+            // 4. REDIRECT TO DASHBOARD
+            router.push('/dashboard');
 
         } catch (error: any) {
             console.error("Login Error:", error.message);
