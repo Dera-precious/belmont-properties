@@ -12,13 +12,14 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
 const menuItems = [
-    { icon: LayoutDashboard, label: "Central Hub", href: "/" },
-    { icon: HomeIcon, label: "My Home", href: "/tenant" }, // RESTORED to /tenant
+    // UPDATED: Points to /dashboard now
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+    { icon: HomeIcon, label: "My Home", href: "/tenant" },
     { icon: Wallet, label: "Wallet", href: "/wallet" },
     { icon: Building2, label: "Listings", href: "/listings" },
     { icon: Users, label: "Collab", href: "/collab" },
     { icon: BookOpen, label: "Mentorship", href: "/mentorship" },
-    { icon: ShieldCheck, label: "Trust Center", href: "/trustcenter" }, // Ensure folder is named 'trustcenter'
+    { icon: ShieldCheck, label: "Trust Center", href: "/trustcenter" },
     { icon: ShoppingBag, label: "Supplies", href: "/supplies" },
     { icon: Scale, label: "Legal Docs", href: "/legal" },
     { icon: LayoutDashboard, label: "Admin Panel", href: "/admin" },
@@ -53,10 +54,8 @@ export default function Sidebar() {
             <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar pb-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
-                    // User can see items, but maybe redirected if clicking specific protected actions inside the page
-                    // For sidebar, we generally allow navigation if the page exists.
-                    // If you strictly want to lock navigation for non-users:
-                    const isLocked = !user && item.href !== '/';
+                    // Protect routes if user is not logged in
+                    const isLocked = !user && item.href !== '/' && item.href !== '/listings';
                     const destination = isLocked ? '/login' : item.href;
 
                     return (

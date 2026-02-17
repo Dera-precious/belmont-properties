@@ -2,126 +2,131 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
-// INTERFACES
-interface Listing {
-    id: number;
-    title: string;
-    price: string;
-    location: string;
-    description: string;
-    image: string;
-    status: 'Active' | 'Pending';
-}
-
+// DEFINE USER TYPE (Updated with all Tiers)
 interface User {
+    id: string;
     name: string;
-    role: 'architect' | 'tenant';
     email: string;
+    role: 'tenant' | 'agent' | 'admin' | 'partner';
+    // ADDED: Premium and Gold to support your pricing page
     tier: 'Free' | 'Pro' | 'Premium' | 'Gold' | 'Diamond';
-    savedIds: number[];
-    myListings: Listing[];
 }
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string, role: 'architect' | 'tenant', name?: string) => void;
-    upgradeTier: (tier: User['tier']) => void;
-    toggleSave: (id: number) => void;
-    addListing: (listing: Omit<Listing, 'id' | 'status'>) => void;
-    updateListing: (id: number, updatedData: Partial<Listing>) => void;
+    // Login now correctly takes 4 arguments
+    login: (email: string, role: User['role'], name: string, tier: User['tier']) => void;
     logout: () => void;
+    // Upgrade function is explicitly defined here
+    upgradeTier: (newTier: string) => Promise<void>;
+    isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
+    // 1. CHECK SUPABASE SESSION ON LOAD
     useEffect(() => {
-        const storedUser = localStorage.getItem('belmont_user');
-        if (storedUser) {
+        const checkUser = async () => {
             try {
-                const parsed = JSON.parse(storedUser);
-                if (!parsed.savedIds) parsed.savedIds = [];
-                if (!parsed.myListings) parsed.myListings = [];
-                setUser(parsed);
-            } catch (e) {
-                localStorage.removeItem('belmont_user');
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (session?.user) {
+                    const meta = session.user.user_metadata;
+                    setUser({
+                        id: session.user.id,
+                        email: session.user.email!,
+                        name: meta.full_name || 'User',
+                        role: meta.role || 'tenant',
+                        tier: meta.tier || 'Free'
+                    });
+                }
+            } catch (error) {
+                console.error("Session check failed", error);
+            } finally {
+                setIsLoading(false);
             }
-        }
-    }, []);
+        };
 
-    const login = (email: string, role: 'architect' | 'tenant', name?: string) => {
-        const newUser: User = {
-            name: name || email.split('@')[0],
-            role,
+        checkUser();
+
+        // 2. LISTEN FOR CHANGES
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                const meta = session.user.user_metadata;
+                setUser({
+                    id: session.user.id,
+                    email: session.user.email!,
+                    name: meta.full_name || 'User',
+                    role: meta.role || 'tenant',
+                    tier: meta.tier || 'Free'
+                });
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                router.push('/login');
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [router]);
+
+    // MANUAL LOGIN
+    const login = (email: string, role: User['role'], name: string, tier: User['tier']) => {
+        setUser({
+            id: 'temp-id',
             email,
-            tier: 'Free',
-            savedIds: [],
-            myListings: []
-        };
-        setUser(newUser);
-        localStorage.setItem('belmont_user', JSON.stringify(newUser));
+            role,
+            name,
+            tier,
+        });
     };
 
-    const upgradeTier = (tier: User['tier']) => {
-        if (user) {
-            const updatedUser = { ...user, tier };
-            setUser(updatedUser);
-            localStorage.setItem('belmont_user', JSON.stringify(updatedUser));
-            setTimeout(() => router.push('/profile'), 100);
-        } else {
-            router.push('/login');
-        }
-    };
-
-    const toggleSave = (id: number) => {
-        if (!user) return router.push('/login');
-        const currentSaved = user.savedIds || [];
-        const isSaved = currentSaved.includes(id);
-        const newSavedIds = isSaved ? currentSaved.filter(i => i !== id) : [...currentSaved, id];
-        const updatedUser = { ...user, savedIds: newSavedIds };
-        setUser(updatedUser);
-        localStorage.setItem('belmont_user', JSON.stringify(updatedUser));
-    };
-
-    const addListing = (data: Omit<Listing, 'id' | 'status'>) => {
-        if (!user) return;
-        const newListing: Listing = {
-            id: Date.now(),
-            ...data,
-            status: 'Active'
-        };
-        const updatedListings = [newListing, ...(user.myListings || [])];
-        const updatedUser = { ...user, myListings: updatedListings };
-        setUser(updatedUser);
-        localStorage.setItem('belmont_user', JSON.stringify(updatedUser));
-    };
-
-    const updateListing = (id: number, updatedData: Partial<Listing>) => {
-        if (!user) return;
-        const updatedListings = user.myListings.map(item =>
-            item.id === id ? { ...item, ...updatedData } : item
-        );
-        const updatedUser = { ...user, myListings: updatedListings };
-        setUser(updatedUser);
-        localStorage.setItem('belmont_user', JSON.stringify(updatedUser));
-    };
-
-    const logout = () => {
+    // MANUAL LOGOUT
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
-        localStorage.removeItem('belmont_user');
+        router.push('/login');
+    };
 
-        // --- CRITICAL FIX ---
-        // We redirect to '/' (Home) instead of '/login'.
-        // This allows src/app/page.tsx to load and play the Entrance Animation.
-        router.push('/');
+    // UPGRADE TIER FUNCTION
+    const upgradeTier = async (newTier: string) => {
+        if (!user) {
+            router.push('/signup'); // Redirect if not logged in
+            return;
+        }
+
+        try {
+            // 1. Update Supabase
+            const { error } = await supabase.auth.updateUser({
+                data: { tier: newTier }
+            });
+
+            if (error) throw error;
+
+            // 2. Update Local State
+            // We use 'as any' here just to be safe with the string type, 
+            // but in a strict app we would validate it matches the 'tier' type.
+            setUser({ ...user, tier: newTier as User['tier'] });
+
+            alert(`Success! You are now on the ${newTier} Plan.`);
+            router.push('/dashboard');
+
+        } catch (error) {
+            console.error("Upgrade failed:", error);
+            alert("Upgrade failed. Please try again.");
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, upgradeTier, toggleSave, addListing, updateListing, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, upgradeTier, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
@@ -129,6 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
     return context;
 }

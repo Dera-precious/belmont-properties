@@ -70,8 +70,8 @@ export default function SignupPage() {
             }
 
             // 2. IF SUCCESSFUL: LOGIN LOCALLY
-            // FIX: Passing arguments separately (Email, Role, Name) to match your AuthContext
-            login(email, finalRole as any, fullName);
+            // FIX: Passing 4 arguments (Email, Role, Name, Tier)
+            login(email, finalRole as any, fullName, finalTier);
 
             // 3. REDIRECT TO SUCCESS PAGE
             router.push('/success');

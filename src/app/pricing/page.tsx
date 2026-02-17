@@ -2,17 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-// IMPORT THE AUTH HOOK
 import { useAuth } from '../context/AuthContext';
-import { Check, ArrowLeft, Crown, Star, Shield, Zap, X, HardDrive } from 'lucide-react';
+import { Check, ArrowLeft, Crown, Star, Shield, Zap, X, HardDrive, Loader2 } from 'lucide-react';
 
 export default function PricingPage() {
     const { upgradeTier } = useAuth();
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+    const [processing, setProcessing] = useState<string | null>(null);
 
-    const handleUpgrade = (tierName: string) => {
-        // @ts-ignore
-        upgradeTier(tierName);
+    const handleUpgrade = async (tierName: string) => {
+        setProcessing(tierName);
+        // No more @ts-ignore needed!
+        await upgradeTier(tierName);
+        setProcessing(null);
     };
 
     const plans = [
@@ -127,9 +129,10 @@ export default function PricingPage() {
 
                         <button
                             onClick={() => handleUpgrade(plan.tierName)}
-                            className={`w-full py-3 rounded-xl font-bold transition-all ${plan.highlight ? 'bg-[#D4AF37] text-[#0F172A] hover:bg-[#b5952f] shadow-lg' : 'bg-gray-100 dark:bg-gray-800 text-[#0F172A] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                            disabled={!!processing}
+                            className={`w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${plan.highlight ? 'bg-[#D4AF37] text-[#0F172A] hover:bg-[#b5952f] shadow-lg' : 'bg-gray-100 dark:bg-gray-800 text-[#0F172A] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                         >
-                            Select {plan.name}
+                            {processing === plan.tierName ? <Loader2 className="animate-spin" size={20} /> : `Select ${plan.name}`}
                         </button>
                     </div>
                 ))}

@@ -22,7 +22,7 @@ export default function MobileNav() {
     if (pathname === '/login' || pathname === '/signup') return null;
 
     const bottomNavItems = [
-        { name: 'Central Hub', href: '/', icon: LayoutGrid, requireAuth: false },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid, requireAuth: true }, // FIXED: Dashboard Link
         { name: 'My Home', href: '/tenant', icon: Home, requireAuth: true },
         { name: 'Menu', isCenter: true, icon: Menu },
         { name: 'Market', href: '/supplies', icon: ShoppingBag, requireAuth: false },
@@ -30,7 +30,7 @@ export default function MobileNav() {
     ];
 
     const overlayMenuItems = [
-        { name: 'Central Hub', icon: LayoutGrid, path: '/' },
+        { name: 'Dashboard', icon: LayoutGrid, path: '/dashboard' }, // FIXED
         { name: 'My Home', icon: Home, path: '/tenant' },
         { name: 'Wallet', icon: Wallet, path: '/wallet' },
         { name: 'Listings', icon: SearchIcon, path: '/listings' },
@@ -99,20 +99,16 @@ export default function MobileNav() {
                         initial={{ opacity: 0, y: 100 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 100 }}
-                        // FIXED: Added light mode background (bg-[#FAFAF9])
                         className="fixed inset-0 z-40 bg-[#FAFAF9] dark:bg-[#0F172A] pt-24 px-6 pb-32 overflow-y-auto transition-colors duration-500"
                     >
-                        {/* HEADER: Title on left, Theme Toggle on right */}
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
                                 <div className="relative w-10 h-10">
                                     <Image src="/belmont-logo-gold.png" alt="Logo" fill className="object-contain" />
                                 </div>
-                                {/* FIXED: Text changes color in light/dark mode */}
                                 <h2 className="text-2xl font-serif font-bold text-[#0F172A] dark:text-white">Menu</h2>
                             </div>
 
-                            {/* THEME TOGGLE (Fixed Colors) */}
                             <button
                                 onClick={toggleTheme}
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-white/10 rounded-full border border-gray-300 dark:border-white/10 text-[#0F172A] dark:text-white hover:bg-gray-300 dark:hover:bg-white/20 transition-colors"
@@ -134,13 +130,11 @@ export default function MobileNav() {
                                         key={item.name}
                                         href={href}
                                         onClick={() => setIsOpen(false)}
-                                        // FIXED: Item Backgrounds now adapt to light/dark
                                         className={`p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex flex-col gap-3 hover:border-[#D4AF37] dark:hover:bg-white/10 transition-all shadow-sm ${isLocked ? 'opacity-60' : ''}`}
                                     >
                                         <div className="text-[#D4AF37]">
                                             {isLocked ? <Lock size={24} /> : <item.icon size={24} />}
                                         </div>
-                                        {/* FIXED: Text color */}
                                         <span className="font-bold text-[#0F172A] dark:text-white">{item.name}</span>
                                     </Link>
                                 );
