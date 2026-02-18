@@ -1,169 +1,250 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
+import { usePaystackPayment } from 'react-paystack'; // IMPORT PAYSTACK
 import {
-    Wallet, ArrowUpRight, ArrowDownLeft, History,
-    Shield, CreditCard, Plus, Lock
+    Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft,
+    History, CreditCard, Loader2, Plus, X
 } from 'lucide-react';
 
+// !!! PASTE YOUR PAYSTACK PUBLIC KEY HERE !!!
+const PAYSTACK_PUBLIC_KEY = 'pk_test_2bbd0679391969083380ff70abd38297ba91d858';
+
+interface Transaction {
+    id: string;
+    amount: number;
+    type: string;
+    status: string;
+    description: string;
+    created_at: string;
+}
+
 export default function WalletPage() {
-    // Mock Data
-    const [balance, setBalance] = useState(2540500); // ₦2.5M
-    const [escrow, setEscrow] = useState(850000);    // ₦850k
-    const [showFundModal, setShowFundModal] = useState(false);
+    const { user } = useAuth();
+    const [balance, setBalance] = useState<number>(0);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const transactions = [
-        { id: 1, title: "Golden Teak Tiles (50sqm)", type: "debit", amount: 625000, date: "Today, 10:23 AM", status: "Completed", category: "Supplies" },
-        { id: 2, title: "Project Milestone: Foundation", type: "escrow_lock", amount: 850000, date: "Yesterday", status: "Held in Escrow", category: "War Room" },
-        { id: 3, title: "Wallet Top-up", type: "credit", amount: 1500000, date: "Oct 24, 2025", status: "Success", category: "Deposit" },
-        { id: 4, title: "MOPOL Escort Service", type: "debit", amount: 15000, date: "Oct 22, 2025", status: "Completed", category: "Trust Center" },
-    ];
+    // PAYSTACK STATE
+    const [amount, setAmount] = useState<number>(0); // Amount in NAIRA
+    const [showModal, setShowModal] = useState(false);
 
-    const formatCurrency = (amount: number) => {
-        return "₦" + amount.toLocaleString();
+    // PAYSTACK CONFIG
+    const config = {
+        reference: (new Date()).getTime().toString(),
+        email: user?.email || '',
+        amount: amount * 100, // Paystack works in Kobo (Naira * 100)
+        publicKey: PAYSTACK_PUBLIC_KEY,
+    };
+
+    const initializePayment = usePaystackPayment(config);
+
+    // FETCH WALLET DATA
+    const fetchData = async () => {
+        if (!user) return;
+        try {
+            // 1. Get Balance (Sum of success transactions)
+            const { data: txData, error: txError } = await supabase
+                .from('transactions')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'success');
+
+            if (txError) throw txError;
+
+            // Calculate Balance: (Deposits + Income) - (Withdrawals + Payments)
+            // Simplified logic: We assume 'amount' is signed (+/-) in the DB
+            // OR if you stored everything as positive, you handle the math here.
+            // Let's assume you store Withdrawals as NEGATIVE numbers in the DB.
+            const currentBalance = txData?.reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+            setBalance(currentBalance);
+
+            // 2. Get Recent History
+            const { data: historyData } = await supabase
+                .from('transactions')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            setTransactions(historyData || []);
+
+        } catch (error) {
+            console.error('Error fetching wallet:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [user]);
+
+    // HANDLE SUCCESSFUL PAYMENT
+    const onSuccess = async (reference: any) => {
+        setShowModal(false);
+        if (!user) return;
+
+        // INSERT INTO SUPABASE
+        const { error } = await supabase.from('transactions').insert({
+            user_id: user.id,
+            amount: amount, // Store Positive Value
+            type: 'deposit',
+            status: 'success',
+            description: 'Wallet Top Up',
+            reference: reference.reference
+        });
+
+        if (error) {
+            alert('Payment successful but failed to record. Contact support.');
+            console.error(error);
+        } else {
+            alert(`Success! Funded ₦${amount.toLocaleString()}`);
+            fetchData(); // Refresh Balance
+            setAmount(0);
+        }
+    };
+
+    const onClose = () => {
+        alert('Payment cancelled.');
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans transition-colors duration-500 pb-32">
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] p-6 md:p-12 font-sans pb-32 transition-colors">
 
-            {/* HERO SECTION */}
-            {/* Added extra padding bottom (pb-32) to create space for the overlap on desktop */}
-            <div className="bg-[#0F172A] text-white p-8 md:p-12 pb-12 md:pb-32 relative overflow-hidden shadow-2xl">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            {/* HEADER */}
+            <div className="max-w-4xl mx-auto mb-8">
+                <h1 className="text-3xl font-serif font-bold text-[#0F172A] dark:text-[#D4AF37]">My Wallet</h1>
+                <p className="text-gray-500">Manage your funds and transactions.</p>
+            </div>
 
-                <div className="max-w-5xl mx-auto relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-                    <div>
-                        <p className="text-[#D4AF37] font-bold tracking-widest text-xs uppercase mb-2">Financial Overview</p>
-                        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-1">My Wallet</h1>
-                        <p className="text-gray-400 text-sm">Manage funds, payments, and escrow securely.</p>
+            <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                {/* 1. BALANCE CARD */}
+                <div className="md:col-span-2 p-8 rounded-3xl bg-[#0F172A] text-white relative overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+
+                    <div className="relative z-10 flex flex-col justify-between h-full min-h-[200px]">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">Total Balance</p>
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin text-[#D4AF37]" />
+                                ) : (
+                                    <h2 className="text-5xl font-serif font-bold">₦{balance.toLocaleString()}</h2>
+                                )}
+                            </div>
+                            <div className="p-3 bg-white/10 rounded-xl">
+                                <WalletIcon size={24} className="text-[#D4AF37]" />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 mt-8">
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl hover:bg-white transition-colors"
+                            >
+                                <Plus size={18} /> Top Up
+                            </button>
+                            <button className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors">
+                                <ArrowUpRight size={18} /> Withdraw
+                            </button>
+                        </div>
                     </div>
+                </div>
 
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <button onClick={() => setShowFundModal(true)} className="flex-1 md:flex-none px-6 py-3 bg-[#D4AF37] text-[#0F172A] font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-[#b5952f] transition-colors shadow-lg">
-                            <Plus size={18} /> Top Up
-                        </button>
-                        <button className="flex-1 md:flex-none px-6 py-3 bg-white/10 backdrop-blur border border-white/20 text-white font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-white/20 transition-colors">
-                            <ArrowUpRight size={18} /> Withdraw
-                        </button>
+                {/* 2. STATS */}
+                <div className="space-y-4">
+                    <div className="p-6 rounded-3xl bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3 mb-2 text-green-500">
+                            <ArrowDownLeft size={20} />
+                            <span className="font-bold text-sm">Income</span>
+                        </div>
+                        <p className="text-2xl font-bold dark:text-white">₦0.00</p>
+                    </div>
+                    <div className="p-6 rounded-3xl bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3 mb-2 text-red-500">
+                            <ArrowUpRight size={20} />
+                            <span className="font-bold text-sm">Spent</span>
+                        </div>
+                        <p className="text-2xl font-bold dark:text-white">₦0.00</p>
                     </div>
                 </div>
             </div>
 
-            {/* MAIN CONTENT */}
-            {/* FIX: Removed negative margin on mobile (mt-6). 
-                Kept negative margin only on desktop (md:-mt-12).
-            */}
-            <div className="max-w-5xl mx-auto px-6 mt-6 md:-mt-12 relative z-20 space-y-8">
+            {/* 3. TRANSACTION HISTORY */}
+            <div className="max-w-4xl mx-auto mt-12">
+                <h3 className="text-xl font-bold text-[#0F172A] dark:text-white mb-6 flex items-center gap-2">
+                    <History size={20} /> Transaction History
+                </h3>
 
-                {/* CARDS ROW */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {/* 1. MAIN BALANCE CARD */}
-                    <div className="bg-white dark:bg-[#1E293B] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl text-green-600 dark:text-green-400">
-                                <Wallet size={24} />
-                            </div>
-                            <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full">Active</span>
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                    {transactions.length === 0 ? (
+                        <div className="p-12 text-center text-gray-400">
+                            <CreditCard size={48} className="mx-auto mb-4 opacity-20" />
+                            <p>No transactions yet.</p>
                         </div>
-                        <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Available Balance</p>
-                        <h2 className="text-4xl font-serif font-bold text-[#0F172A] dark:text-white">{formatCurrency(balance)}</h2>
-
-                        <div className="mt-6 flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center gap-1"><div className="w-2 h-2 bg-green-500 rounded-full"></div>NGN Wallet</div>
-                            <div className="flex items-center gap-1"><CreditCard size={14} /> **** 4829</div>
-                        </div>
-                    </div>
-
-                    {/* 2. ESCROW CARD */}
-                    <div className="bg-[#0F172A] text-white p-8 rounded-3xl shadow-xl border border-gray-800 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-6 opacity-5"><Shield size={120} /></div>
-
-                        <div className="flex justify-between items-start mb-6 relative z-10">
-                            <div className="p-3 bg-white/10 rounded-xl text-[#D4AF37]">
-                                <Lock size={24} />
-                            </div>
-                            <span className="text-xs font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-3 py-1 rounded-full border border-[#D4AF37]/30">Protected</span>
-                        </div>
-                        <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1 relative z-10">Held in Escrow</p>
-                        <h2 className="text-4xl font-serif font-bold text-white mb-2 relative z-10">{formatCurrency(escrow)}</h2>
-                        <p className="text-xs text-gray-400 relative z-10">Funds locked for active projects. Released upon milestone approval.</p>
-                    </div>
-                </div>
-
-                {/* TRANSACTIONS LIST */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-[#0F172A] dark:text-white flex items-center gap-2">
-                            <History size={20} className="text-gray-400" /> Recent Activity
-                        </h3>
-                        <button className="text-xs font-bold text-[#D4AF37] hover:underline">View Statement</button>
-                    </div>
-
-                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {transactions.map((tx) => (
-                            <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-black/20 transition-colors group">
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-3 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 text-green-600' :
-                                            tx.type === 'escrow_lock' ? 'bg-[#0F172A] text-[#D4AF37]' :
-                                                'bg-red-50 text-red-500'
-                                        }`}>
-                                        {tx.type === 'credit' ? <ArrowDownLeft size={18} /> :
-                                            tx.type === 'escrow_lock' ? <Lock size={18} /> :
-                                                <ArrowUpRight size={18} />}
+                    ) : (
+                        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {transactions.map((tx) => (
+                                <div key={tx.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-full ${tx.type === 'deposit' ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-red-100 text-red-600 dark:bg-red-900/20'}`}>
+                                            {tx.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-[#0F172A] dark:text-white">{tx.description}</p>
+                                            <p className="text-xs text-gray-500">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-[#0F172A] dark:text-white text-sm">{tx.title}</p>
-                                        <p className="text-xs text-gray-500">{tx.date} • {tx.category}</p>
-                                    </div>
+                                    <span className={`font-bold font-serif ${tx.type === 'deposit' ? 'text-green-600' : 'text-[#0F172A] dark:text-white'}`}>
+                                        {tx.type === 'deposit' ? '+' : '-'} ₦{Math.abs(tx.amount).toLocaleString()}
+                                    </span>
                                 </div>
-                                <div className="text-right">
-                                    <p className={`font-bold font-serif text-sm ${tx.type === 'credit' ? 'text-green-600' :
-                                            tx.type === 'escrow_lock' ? 'text-gray-500' :
-                                                'text-[#0F172A] dark:text-white'
-                                        }`}>
-                                        {tx.type === 'credit' ? '+' : '-'}{formatCurrency(tx.amount)}
-                                    </p>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{tx.status}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-
             </div>
 
-            {/* FUND WALLET MODAL */}
-            {showFundModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1E293B] w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                        <h3 className="text-xl font-serif font-bold text-[#0F172A] dark:text-white mb-6">Top Up Wallet</h3>
+            {/* TOP UP MODAL */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 max-w-sm w-full relative animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setShowModal(false)}
+                            className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-white/10 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"
+                        >
+                            <X size={16} />
+                        </button>
 
-                        <div className="space-y-4 mb-8">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Amount (NGN)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-3.5 text-gray-400 font-serif">₦</span>
-                                    <input type="number" placeholder="0.00" className="w-full pl-8 p-3 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#D4AF37] font-bold text-lg" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase block mb-2">Payment Method</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button className="p-3 border border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37] rounded-xl font-bold text-sm flex items-center justify-center gap-2">
-                                        <CreditCard size={16} /> Card
-                                    </button>
-                                    <button className="p-3 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                        Bank Transfer
-                                    </button>
-                                </div>
-                            </div>
+                        <h3 className="text-xl font-bold mb-2 dark:text-white">Fund Wallet</h3>
+                        <p className="text-gray-500 text-sm mb-6">Enter amount to add via Paystack.</p>
+
+                        <div className="mb-6">
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Amount (₦)</label>
+                            <input
+                                type="number"
+                                value={amount}
+                                onChange={(e) => setAmount(Number(e.target.value))}
+                                className="w-full p-4 text-2xl font-bold bg-gray-50 dark:bg-[#0F172A] rounded-xl border-none outline-none focus:ring-2 ring-[#D4AF37] dark:text-white"
+                                placeholder="0.00"
+                            />
                         </div>
 
-                        <div className="flex gap-3">
-                            <button onClick={() => setShowFundModal(false)} className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">Cancel</button>
-                            <button onClick={() => setShowFundModal(false)} className="flex-1 py-3 bg-[#0F172A] text-white font-bold rounded-xl hover:bg-[#1e293b] transition-colors">Proceed</button>
-                        </div>
+                        <button
+                            onClick={() => {
+                                if (amount < 100) {
+                                    alert("Minimum deposit is ₦100");
+                                    return;
+                                }
+                                initializePayment({ onSuccess, onClose });
+                            }}
+                            className="w-full py-4 bg-[#0F172A] dark:bg-[#D4AF37] text-white dark:text-[#0F172A] font-bold rounded-xl hover:opacity-90 transition-opacity"
+                        >
+                            Pay ₦{amount.toLocaleString()}
+                        </button>
                     </div>
                 </div>
             )}
