@@ -1,28 +1,74 @@
 'use client';
 
 import React, { useState } from 'react';
-import BookingModal from '@/components/BookingModal';
-import { Shield, Plane, Scale, Ruler, ArrowRight, CheckCircle2, PenTool } from 'lucide-react';
+import PaymentModal from '@/components/PaymentModal';
+import { useBookings } from '@/app/context/BookingContext'; // IMPORT BOOKING CONTEXT
+import { Shield, Plane, Scale, Ruler, ArrowRight, CheckCircle2, PenTool, AlertCircle } from 'lucide-react';
 
-export default function ServicesPage() {
-    // FIX: Added 'architect' to the state type
-    const [bookingType, setBookingType] = useState<'police' | 'drone' | 'legal' | 'surveyor' | 'architect' | null>(null);
+type ServiceType = 'police' | 'drone' | 'legal' | 'surveyor' | 'architect';
+
+const SERVICES = {
+    police: { price: 15000, title: 'Safe Inspect™', desc: 'Book a verified Mobile Police (MOPOL) escort.' },
+    drone: { price: 25000, title: 'Aero View', desc: 'Deploy a licensed drone pilot for a 4K audit.' },
+    legal: { price: 50000, title: 'Legal Shield', desc: 'Hire a top-tier property lawyer for contract review.' },
+    surveyor: { price: 40000, title: 'Geo-Survey', desc: 'Book a registered surveyor for land coordinates.' },
+    architect: { price: 75000, title: 'Design Consult', desc: 'Consult a registered architect for structural review.' }
+};
+
+export default function TrustCenterPage() {
+    const [bookingType, setBookingType] = useState<ServiceType | null>(null);
+    const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+    // PULL THE ADD BOOKING FUNCTION FROM CONTEXT
+    const { addBooking } = useBookings();
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 5000);
+    };
+
+    // SAVE BOOKING TO DATABASE ON SUCCESS
+    const handlePaymentSuccess = async (reference: any, finalAmount: number) => {
+        if (!bookingType) return;
+
+        const serviceName = SERVICES[bookingType].title;
+        setBookingType(null); // Close modal
+
+        try {
+            // TRIGGER THE DATABASE SAVE
+            await addBooking(serviceName, finalAmount, reference.reference);
+            showToast(`Payment successful! Your ${serviceName} is confirmed. Ref: ${reference.reference}`, 'success');
+        } catch (error) {
+            console.error("Failed to save booking:", error);
+            showToast("Payment successful, but failed to save receipt.", 'error');
+        }
+    };
+
+    const selectedService = bookingType ? SERVICES[bookingType] : null;
 
     return (
-        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans p-6 md:p-12 pb-32 transition-colors duration-500">
+        <div className="min-h-screen bg-[#FAFAF9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans p-6 md:p-12 pb-32 transition-colors duration-500 relative">
 
-            <BookingModal
-                isOpen={!!bookingType}
-                onClose={() => setBookingType(null)}
-                type={bookingType || 'police'}
-                price={
-                    bookingType === 'police' ? 15000 :
-                        bookingType === 'drone' ? 25000 :
-                            bookingType === 'legal' ? 50000 :
-                                bookingType === 'surveyor' ? 40000 :
-                                    75000 // Architect Price
-                }
-            />
+            {toast && (
+                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl animate-in slide-in-from-top-4 fade-in duration-300 font-bold text-sm max-w-md w-full md:w-auto ${toast.type === 'success'
+                        ? 'bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400'
+                        : 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400'
+                    }`}>
+                    {toast.type === 'success' ? <CheckCircle2 size={20} className="shrink-0" /> : <AlertCircle size={20} className="shrink-0" />}
+                    <span className="truncate">{toast.message}</span>
+                </div>
+            )}
+
+            {selectedService && (
+                <PaymentModal
+                    isOpen={!!bookingType}
+                    onClose={() => setBookingType(null)}
+                    title={`Book ${selectedService.title}`}
+                    description={selectedService.desc}
+                    fixedAmount={selectedService.price}
+                    onPaymentSuccess={handlePaymentSuccess}
+                />
+            )}
 
             <div className="max-w-7xl mx-auto mb-16">
                 <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">The Trust Layer.</h1>
@@ -34,8 +80,7 @@ export default function ServicesPage() {
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                {/* 1. SAFETY (POLICE) */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group">
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group hover:border-blue-500 transition-colors">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 text-blue-600 dark:text-blue-400"><Shield size={32} /></div>
@@ -48,8 +93,7 @@ export default function ServicesPage() {
                     </div>
                 </div>
 
-                {/* 2. DRONE (REMOTE VIEW) */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group">
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group hover:border-[#D4AF37] transition-colors">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center mb-6 text-[#D4AF37]"><Plane size={32} /></div>
@@ -62,8 +106,7 @@ export default function ServicesPage() {
                     </div>
                 </div>
 
-                {/* 3. LEGAL (LAWYERS) */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group">
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group hover:border-purple-500 transition-colors">
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="w-16 h-16 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center mb-6 text-purple-600 dark:text-purple-400"><Scale size={32} /></div>
                         <h3 className="text-2xl font-bold mb-2">Legal Shield</h3>
@@ -75,8 +118,7 @@ export default function ServicesPage() {
                     </div>
                 </div>
 
-                {/* 4. SURVEY (SURVEYORS) */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group">
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group hover:border-orange-500 transition-colors">
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mb-6 text-orange-600 dark:text-orange-400"><Ruler size={32} /></div>
                         <h3 className="text-2xl font-bold mb-2">Geo-Survey</h3>
@@ -88,8 +130,7 @@ export default function ServicesPage() {
                     </div>
                 </div>
 
-                {/* 5. ARCHITECT (NEW CARD) */}
-                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group md:col-span-2 lg:col-span-1">
+                <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-xl relative group md:col-span-2 lg:col-span-1 hover:border-teal-500 transition-colors">
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="w-16 h-16 bg-teal-50 dark:bg-teal-900/20 rounded-2xl flex items-center justify-center mb-6 text-teal-600 dark:text-teal-400"><PenTool size={32} /></div>
                         <h3 className="text-2xl font-bold mb-2">Design Consult</h3>
