@@ -9,7 +9,20 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboard() {
-    const { bookings, stats, updateBookingStatus } = useBookings();
+    // ONLY pull what actually exists in the context right now
+    const { bookings } = useBookings();
+
+    // --- MOCK DATA: STATS (Prevents Vercel crash) ---
+    const stats = {
+        revenue: 12500000,
+        pending: 8,
+        active: 14
+    };
+
+    // --- MOCK FUNCTION: UPDATE BOOKING ---
+    const updateBookingStatus = (id: string, status: string) => {
+        alert(`Booking ${id} marked as ${status}. (Database connection coming soon!)`);
+    };
 
     // --- MOCK DATA: FRAUD RADAR ---
     const suspiciousListings = [
@@ -47,7 +60,7 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* KPI CARDS (UNCHANGED) */}
+            {/* KPI CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
                 <div className="bg-white dark:bg-[#1E293B] p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-3 mb-2">
@@ -82,7 +95,7 @@ export default function AdminDashboard() {
             {/* MAIN GRID: REQUESTS + FRAUD + USERS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* COL 1: THE RED PHONE (REQUESTS) - Spans 2 columns */}
+                {/* COL 1: THE RED PHONE (REQUESTS) */}
                 <div className="lg:col-span-2 bg-white dark:bg-[#1E293B] rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden h-fit">
                     <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                         <h3 className="font-bold text-lg flex items-center gap-2"><Clock size={20} className="text-[#D4AF37]" /> Incoming Requests</h3>
@@ -102,13 +115,14 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                {bookings.map((item) => (
+                                {bookings?.map((item) => (
                                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                         <td className="px-6 py-4 font-bold">
                                             {item.service}
                                             <div className="text-xs text-gray-400 font-normal mt-0.5">{item.price}</div>
                                         </td>
-                                        <td className="px-6 py-4">{item.clientName}</td>
+                                        {/* Fallback to 'Belmont User' since clientName isn't in our current DB schema yet */}
+                                        <td className="px-6 py-4">Belmont User</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold 
                                                 ${item.status === 'Pending' ? 'bg-orange-100 text-orange-600' :
@@ -118,15 +132,20 @@ export default function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            {item.status === 'Pending' && (
+                                            {item.status === 'Confirmed' && (
                                                 <div className="flex justify-end gap-2">
-                                                    <button onClick={() => updateBookingStatus(item.id, 'Confirmed')} className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"><CheckCircle2 size={16} /></button>
-                                                    <button onClick={() => updateBookingStatus(item.id, 'Rejected')} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"><XCircle size={16} /></button>
+                                                    <button onClick={() => updateBookingStatus(item.id, 'Completed')} className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"><CheckCircle2 size={16} /></button>
+                                                    <button onClick={() => updateBookingStatus(item.id, 'Cancelled')} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"><XCircle size={16} /></button>
                                                 </div>
                                             )}
                                         </td>
                                     </tr>
                                 ))}
+                                {(!bookings || bookings.length === 0) && (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No active bookings found.</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
